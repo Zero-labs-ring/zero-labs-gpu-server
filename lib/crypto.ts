@@ -1,9 +1,10 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { getEnvOrThrow } from './env-check';
 
 const ALGORITHM = 'aes-256-gcm';
 
 function getKey(): Buffer {
-  const hex = process.env.ENCRYPTION_KEY || '16f9027b2be0026c400e041499a684c6bc6e2d8e4c4ffa528a90e5eb4cc8a65e';
+  const hex = getEnvOrThrow('ENCRYPTION_KEY');
   if (!hex || hex.length !== 64) {
     throw new Error('ENCRYPTION_KEY must be a 64-char hex string (32 bytes)');
   }

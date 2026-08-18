@@ -101,6 +101,7 @@ export default function Dashboard() {
   const [originUrl, setOriginUrl] = useState('');
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
+  const publicApiKey = process.env.NEXT_PUBLIC_ZERO_API_KEY ?? '';
 
   const fetchGlobal = useCallback(async () => {
     try {
@@ -205,8 +206,8 @@ export default function Dashboard() {
               <span>{originUrl ? `${originUrl}/v1` : 'https://zero-gpu-server.vercel.app/v1'}</span>
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{copiedUrl ? 'Copied' : 'Copy'}</span>
             </div>
-            <div className="gateway-pill" onClick={() => copy('zerotech13287', 'key')}>
-              <span>Bearer zerotech13287</span>
+            <div className="gateway-pill" onClick={() => publicApiKey && copy(publicApiKey, 'key')}>
+              <span>{publicApiKey ? `Bearer ${publicApiKey}` : 'Set NEXT_PUBLIC_ZERO_API_KEY'}</span>
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{copiedKey ? 'Copied' : 'Copy'}</span>
             </div>
           </div>
@@ -256,6 +257,7 @@ function OverviewView({
   onRefresh: () => void;
 }) {
   const [firing, setFiring] = useState<string | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('auto');
 
   const handleLaunch = async (model: 'pro' | 'ultra') => {
     setFiring(model);
@@ -263,7 +265,10 @@ function OverviewView({
       await apiFetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model }),
+        body: JSON.stringify({
+          model,
+          account_id: selectedAccountId === 'auto' ? undefined : selectedAccountId
+        }),
       });
       onRefresh();
     } catch { /* ignore */ }
@@ -290,7 +295,30 @@ function OverviewView({
           <h2>Overview</h2>
           <p>Cluster telemetry and GPU instance management.</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: 6, padding: '4px 8px' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>Target Account:</span>
+            <select
+              value={selectedAccountId}
+              onChange={(e) => setSelectedAccountId(e.target.value)}
+              style={{
+                background: 'transparent',
+                color: 'var(--text-primary)',
+                border: 'none',
+                fontSize: 12,
+                fontFamily: 'inherit',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="auto" style={{ background: '#1c1c1e', color: '#fff' }}>⚡ Auto (Lowest Usage)</option>
+              {accounts.filter(a => a.is_active).map(a => (
+                <option key={a.id} value={a.id} style={{ background: '#1c1c1e', color: '#fff' }}>
+                  @{a.username} {a.label ? `(${a.label})` : ''} [{a.weekly_hours_used.toFixed(1)}h/30h]
+                </option>
+              ))}
+            </select>
+          </div>
           <button className="btn btn-secondary btn-sm" onClick={onRefresh}>Refresh</button>
           <button className="btn btn-white btn-sm" onClick={() => onNavigate('playground')}>Open Playground</button>
         </div>
@@ -341,7 +369,7 @@ function OverviewView({
               disabled={firing !== null}
               onClick={() => handleLaunch('pro')}
             >
-              {firing === 'pro' ? 'Launching...' : 'Deploy Pro Node'}
+              {firing === 'pro' ? 'Launching...' : `Deploy Pro Node ${selectedAccountId !== 'auto' ? `(@${accounts.find(a=>a.id===selectedAccountId)?.username})` : ''}`}
             </button>
             <button className="btn btn-secondary" onClick={() => onNavigate('sessions')}>Inspect</button>
           </div>
@@ -364,7 +392,7 @@ function OverviewView({
               disabled={firing !== null}
               onClick={() => handleLaunch('ultra')}
             >
-              {firing === 'ultra' ? 'Launching...' : 'Deploy Ultra Node'}
+              {firing === 'ultra' ? 'Launching...' : `Deploy Ultra Node ${selectedAccountId !== 'auto' ? `(@${accounts.find(a=>a.id===selectedAccountId)?.username})` : ''}`}
             </button>
             <button className="btn btn-secondary" onClick={() => onNavigate('sessions')}>Inspect</button>
           </div>
@@ -453,6 +481,7 @@ function PlaygroundView({ originUrl }: { originUrl: string }) {
   const [running, setRunning] = useState(false);
   const [stats, setStats] = useState<{ tokens: number; ms: number } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const publicApiKey = process.env.NEXT_PUBLIC_ZERO_API_KEY ?? '';
 
   const handleRun = async () => {
     if (running) {
@@ -473,7 +502,7 @@ function PlaygroundView({ originUrl }: { originUrl: string }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer zerotech13287',
+          ...(publicApiKey ? { 'Authorization': `Bearer ${publicApiKey}` } : {}),
         },
         body: JSON.stringify({
           model,
@@ -930,7 +959,7 @@ function ConfigView() {
   const handleSave = async (key: string) => {
     try {
       await apiFetch(`/api/config/${key}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ value: edits[key] }),
       });

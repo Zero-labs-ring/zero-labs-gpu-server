@@ -16,13 +16,21 @@
 # Misc
 .DS_Store
 *.pem
+*.log
+scratch/
+test.py
 
-# Local env files
-.env*.local
+# Local env secrets (Do NOT commit)
 .env
+.env*.local
 
-# Vercel
+# Vercel & IDE
 .vercel
+.agent/
+
+# Notebooks (Exclude temporary & archive files)
+notebooks/archive/
+notebooks/testing/
 
 # TypeScript
 *.tsbuildinfo

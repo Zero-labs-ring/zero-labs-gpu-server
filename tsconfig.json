@@ -39,6 +39,7 @@
     "node_modules",
     "backup",
     "notebooks",
-    "prompts"
+    "prompts",
+    "zero-gpu-server"
   ]
 }

@@ -71,7 +71,7 @@ export class KaggleClient {
 
   async getKernelOutput(username: string, slug: string): Promise<string> {
     const result = await this.request<{ files?: { data: string }[]; log?: string }>(
-      'GET', `/kernels/output?userName=${username}&kernelSlug=${slug}&datasetVersionNumber=1`
+      'GET', `/kernels/output?userName=${username}&kernelSlug=${slug}`
     );
     const files = result?.files ?? [];
     return files.map((f) => f.data).join('\n') || result?.log || '';

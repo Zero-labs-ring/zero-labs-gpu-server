@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { searchWeb, SearchResultItem } from '@/app/api/search/route';
+import { getEnvOrThrow } from '@/lib/env-check';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +11,58 @@ interface ChatMessage {
   content: string;
 }
 
+function isAuthorized(req: NextRequest, expectedApiKey: string): boolean {
+  const auth = req.headers.get('authorization') ?? '';
+  const xApiKey = req.headers.get('x-api-key') ?? '';
+
+  const bearer = auth.toLowerCase().startsWith('bearer ')
+    ? auth.slice(7).trim()
+    : '';
+  const presented = bearer || xApiKey.trim();
+  if (!presented) return false;
+
+  const a = Buffer.from(presented);
+  const b = Buffer.from(expectedApiKey);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function hasValidAdminSession(req: NextRequest): boolean {
+  const token = req.cookies.get('zero_admin_session')?.value ?? '';
+  if (!token) return false;
+
+  try {
+    const user = getEnvOrThrow('ADMIN_USERNAME');
+    const pass = getEnvOrThrow('ADMIN_PASSWORD');
+    const secret = getEnvOrThrow('ENCRYPTION_KEY');
+    const expected = crypto.createHmac('sha256', secret).update(`${user}:${pass}`).digest('hex');
+
+    const a = Buffer.from(token);
+    const b = Buffer.from(expected);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+function isLocalDevRequest(req: NextRequest): boolean {
+  if (process.env.NODE_ENV === 'production') return false;
+  if (process.env.ALLOW_INSECURE_LOCAL_DEV_AUTH_BYPASS !== 'true') return false;
+  const host = (req.headers.get('host') ?? '').toLowerCase();
+  const origin = (req.headers.get('origin') ?? '').toLowerCase();
+  const referer = (req.headers.get('referer') ?? '').toLowerCase();
+
+  const localHosts = ['localhost:3000', '127.0.0.1:3000', '[::1]:3000'];
+  const localOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://[::1]:3000'];
+
+  return localHosts.includes(host)
+    && localOrigins.some((o) => (origin ? origin.startsWith(o) : referer.startsWith(o)));
+}
+
 // Helper to look up active live endpoint for a model
-async function getLiveEndpoint(model: 'pro' | 'ultra'): Promise<{ url: string; apiKey: string; gwId?: string } | null> {
+async function getLiveEndpoint(
+  model: 'pro' | 'ultra',
+  defaultApiKey: string
+): Promise<{ url: string; apiKey: string; gwId?: string } | null> {
   try {
     const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
 
@@ -29,7 +81,7 @@ async function getLiveEndpoint(model: 'pro' | 'ultra'): Promise<{ url: string; a
       const base = gw.tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
       return {
         url: `${base}/v1/chat/completions`,
-        apiKey: gw.api_key || process.env.ZERO_API_KEY || 'zerotech13287',
+        apiKey: gw.api_key || defaultApiKey,
         gwId: gw.id,
       };
     }
@@ -52,7 +104,7 @@ async function getLiveEndpoint(model: 'pro' | 'ultra'): Promise<{ url: string; a
         const base = tunnel.replace(/\/$/, '');
         return {
           url: `${base}/v1/chat/completions`,
-          apiKey: process.env.ZERO_API_KEY || 'zerotech13287',
+          apiKey: defaultApiKey,
         };
       }
     }
@@ -65,6 +117,11 @@ async function getLiveEndpoint(model: 'pro' | 'ultra'): Promise<{ url: string; a
 
 export async function POST(req: NextRequest) {
   try {
+    const defaultApiKey = getEnvOrThrow('ZERO_API_KEY');
+    if (!isAuthorized(req, defaultApiKey) && !hasValidAdminSession(req) && !isLocalDevRequest(req)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       model: rawModel = 'pro',
@@ -127,7 +184,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve live upstream tunnel endpoint from Supabase
-    const liveTarget = await getLiveEndpoint(targetModel);
+    const liveTarget = await getLiveEndpoint(targetModel, defaultApiKey);
     if (!liveTarget) {
       return NextResponse.json({
         error: `No live GPU endpoint is currently active for model '${targetModel}'. Please start a GPU session in the dashboard.`,

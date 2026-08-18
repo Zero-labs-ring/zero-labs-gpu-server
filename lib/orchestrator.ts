@@ -67,10 +67,10 @@ export async function runOrchestrationCycle(): Promise<{ log: string[] }> {
   return { log };
 }
 
-export async function fireSingleSession(model: ModelType): Promise<{ success: boolean; message: string; log: string[] }> {
+export async function fireSingleSession(model: ModelType, accountId?: string): Promise<{ success: boolean; message: string; log: string[] }> {
   const cfg = await getConfig();
   const log: string[] = [];
-  await fireNewSession(model, cfg, log);
+  await fireNewSession(model, cfg, log, accountId);
   const isOk = !log.some(l => l.includes('❌'));
   return {
     success: isOk,
@@ -233,7 +233,8 @@ async function checkSessionHealth(
 async function fireNewSession(
   model: ModelType,
   cfg: Record<string, string>,
-  log: string[]
+  log: string[],
+  targetAccountId?: string
 ): Promise<void> {
   const maxConcurrentPerAccount = parseInt(cfg['MAX_CONCURRENT_SESSIONS_PER_ACCOUNT'] ?? '2', 10);
   const weeklyQuotaH = parseFloat(cfg['ACCOUNT_WEEKLY_QUOTA_H'] ?? '30');
@@ -253,26 +254,39 @@ async function fireNewSession(
     if (s.kernel_slug) existingSlugs[s.account_id].push(s.kernel_slug);
   }
 
-  // Fetch all active accounts matching model assignment
-  const { data: allAccounts } = await supabase
-    .from('kaggle_accounts')
-    .select('*')
-    .eq('is_active', true)
-    .in('model_assignment', [model, 'both'])
-    .lt('weekly_hours_used', weeklyQuotaH)
-    .order('weekly_hours_used', { ascending: true });
+  let account: any = null;
 
-  if (!allAccounts || allAccounts.length === 0) {
-    log.push(`[${model}] ❌ No active accounts with remaining weekly quota (< ${weeklyQuotaH}h)`);
-    return;
+  if (targetAccountId) {
+    const { data: specAcc } = await supabase
+      .from('kaggle_accounts')
+      .select('*')
+      .eq('id', targetAccountId)
+      .single();
+    if (specAcc) account = specAcc;
   }
 
-  // Filter for accounts with < maxConcurrentPerAccount active sessions
-  const availableAccounts = allAccounts.filter(
-    (a: { id: string }) => (sessionCounts[a.id] || 0) < maxConcurrentPerAccount
-  );
+  if (!account) {
+    // Fetch all active accounts matching model assignment
+    const { data: allAccounts } = await supabase
+      .from('kaggle_accounts')
+      .select('*')
+      .eq('is_active', true)
+      .in('model_assignment', [model, 'both'])
+      .lt('weekly_hours_used', weeklyQuotaH)
+      .order('weekly_hours_used', { ascending: true });
 
-  const account = availableAccounts.length > 0 ? availableAccounts[0] : allAccounts[0];
+    if (!allAccounts || allAccounts.length === 0) {
+      log.push(`[${model}] ❌ No active accounts with remaining weekly quota (< ${weeklyQuotaH}h)`);
+      return;
+    }
+
+    // Filter for accounts with < maxConcurrentPerAccount active sessions
+    const availableAccounts = allAccounts.filter(
+      (a: { id: string }) => (sessionCounts[a.id] || 0) < maxConcurrentPerAccount
+    );
+
+    account = availableAccounts.length > 0 ? availableAccounts[0] : allAccounts[0];
+  }
 
   const apiKey = decrypt(account.api_key_encrypted, account.api_key_iv, account.api_key_tag);
   const kaggle = new KaggleClient({ username: account.username, apiKey });

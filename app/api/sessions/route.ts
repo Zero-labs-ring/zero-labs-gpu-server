@@ -16,12 +16,12 @@ export async function GET() {
 
 // POST /api/sessions — manually fire an individual model session
 export async function POST(req: Request) {
-    const { model } = await req.json();
+    const { model, account_id } = await req.json();
     if (!model || !['pro', 'ultra'].includes(model)) {
         return NextResponse.json({ error: 'model must be "pro" or "ultra"' }, { status: 400 });
     }
     try {
-        const result = await fireSingleSession(model as 'pro' | 'ultra');
+        const result = await fireSingleSession(model as 'pro' | 'ultra', account_id);
         return NextResponse.json({ ...result });
     } catch (err) {
         return NextResponse.json({ error: String(err) }, { status: 500 });

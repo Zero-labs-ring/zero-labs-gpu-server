@@ -1,6 +1,6 @@
 import json, re
 
-path = 'e:/zero-gpu-server/titan_ultra_gguf_pipeline_v3.ipynb'
+path = 'notebooks/active/ultra_notebook.ipynb'
 with open(path, 'r', encoding='utf-8') as f:
     nb = json.load(f)
 
@@ -127,13 +127,13 @@ for cell in cells:
 
 nb['cells'] = fixed_cells
 
-out_path = 'e:/zero-gpu-server/titan_ultra_gguf_pipeline_v4.ipynb'
+out_path = 'notebooks/active/ultra_notebook.ipynb'
 with open(out_path, 'w', encoding='utf-8') as f:
     json.dump(nb, f, indent=1, ensure_ascii=False)
 print(f"\nSaved fixed notebook to: {out_path}")
 
 # Verify fixes
-with open(out_path, 'r') as f:
+with open(out_path, 'r', encoding='utf-8') as f:
     final = f.read()
 
 checks = {

@@ -21,3 +21,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ key:
 
     return NextResponse.json({ success: true, key: key, value });
 }
+
+// PATCH is kept for dashboard compatibility
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ key: string }> }) {
+    return PUT(req, ctx);
+}

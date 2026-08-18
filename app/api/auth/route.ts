@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getEnvOrThrow } from '@/lib/env-check';
 
 function getAdminAuthToken(): string {
-  const user = process.env.ADMIN_USERNAME || 'admin';
-  const pass = process.env.ADMIN_PASSWORD || 'admin@zerolabs123';
-  const secret = process.env.ENCRYPTION_KEY || 'zero-labs-admin-salt-key';
+  const user = getEnvOrThrow('ADMIN_USERNAME');
+  const pass = getEnvOrThrow('ADMIN_PASSWORD');
+  const secret = getEnvOrThrow('ENCRYPTION_KEY');
   return crypto.createHmac('sha256', secret).update(`${user}:${pass}`).digest('hex');
 }
 
@@ -14,8 +15,8 @@ export async function POST(req: Request) {
     const username = body?.username;
     const password = body?.password;
 
-    const expectedUser = process.env.ADMIN_USERNAME || 'admin';
-    const expectedPass = process.env.ADMIN_PASSWORD || 'admin@zerolabs123';
+    const expectedUser = getEnvOrThrow('ADMIN_USERNAME');
+    const expectedPass = getEnvOrThrow('ADMIN_PASSWORD');
 
     if (username === expectedUser && password === expectedPass) {
       const token = getAdminAuthToken();
@@ -48,7 +49,7 @@ export async function GET(req: Request) {
     const expectedToken = getAdminAuthToken();
 
     if (token && token === expectedToken) {
-      return NextResponse.json({ authenticated: true, user: process.env.ADMIN_USERNAME || 'admin' });
+      return NextResponse.json({ authenticated: true, user: getEnvOrThrow('ADMIN_USERNAME') });
     }
 
     return NextResponse.json({ authenticated: false }, { status: 401 });

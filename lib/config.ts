@@ -41,8 +41,8 @@ function getEnvFallback(): Record<string, string> {
     SESSION_SOFT_LIMIT_H:  process.env.SESSION_SOFT_LIMIT_H  ?? '9',
     PREFIRE_BUFFER_MIN:    process.env.PREFIRE_BUFFER_MIN     ?? '30',
     HF_TOKEN:              process.env.HF_TOKEN              ?? '',
-    ZERO_API_KEY:          process.env.ZERO_API_KEY          ?? 'auto',
-    CRON_SECRET:           process.env.CRON_SECRET           ?? 'changeme',
+    ZERO_API_KEY:          process.env.ZERO_API_KEY          ?? '',
+    CRON_SECRET:           process.env.CRON_SECRET           ?? '',
     PRO_KERNEL_SLUG:       process.env.PRO_KERNEL_SLUG       ?? 'zero-pro-server',
     ULTRA_KERNEL_SLUG:     process.env.ULTRA_KERNEL_SLUG     ?? 'zero-ultra-server',
   };
