@@ -129,11 +129,13 @@ export async function POST(req: NextRequest) {
       stream = false,
       temperature = 0.7,
       max_tokens = 512,
-      web_search: enableSearch = false,
       ...extra
     } = body;
 
-    // Check if web search should be activated
+    // Check if web search should be activated across all parameter conventions
+    const enableSearch = Boolean(
+      body.web_search ?? body.webSearch ?? body.search ?? (extra as Record<string, unknown>)?.web_search ?? (extra as Record<string, unknown>)?.webSearch ?? false
+    );
     const isSearchModel = String(rawModel).toLowerCase().includes('search');
     const shouldUseSearch = enableSearch || isSearchModel;
 
@@ -148,7 +150,9 @@ export async function POST(req: NextRequest) {
 
     // Web Search Augmentation (Search Server integration)
     if (shouldUseSearch && processedMessages.length > 0) {
-      const lastUserMsg = [...processedMessages].reverse().find(m => m.role === 'user')?.content || '';
+      const lastUserIdx = processedMessages.map(m => m.role).lastIndexOf('user');
+      const lastUserMsg = lastUserIdx >= 0 ? processedMessages[lastUserIdx].content : '';
+
       if (lastUserMsg) {
         try {
           searchResults = await searchWeb(lastUserMsg, 5);
@@ -157,24 +161,33 @@ export async function POST(req: NextRequest) {
               `[${i + 1}] "${r.title}"\nSource: ${r.url}\n${r.snippet}`
             ).join('\n\n');
 
-            const searchSystemPrompt =
-              `You are an advanced AI assistant with real-time internet access powered by the Zero Search Server.\n` +
-              `Use the following fresh search results to provide an accurate, up-to-date answer. ` +
-              `Cite your sources using bracketed numbers like [1], [2] corresponding to the search results.\n\n` +
-              `=== REAL-TIME SEARCH RESULTS ===\n${searchContext}\n=== END SEARCH RESULTS ===`;
+            const searchSystemInstruction =
+              `You are an advanced AI assistant with real-time internet access powered by Zero Search Server.\n` +
+              `Fresh search results have been retrieved and attached to the user's query.\n` +
+              `Use these search results to provide an accurate, up-to-date answer and cite sources using bracketed numbers like [1], [2].`;
 
-            // Prepend or update system message
+            // 1. Prepend or update system instruction
             const sysIdx = processedMessages.findIndex(m => m.role === 'system');
             if (sysIdx >= 0) {
               processedMessages[sysIdx] = {
                 role: 'system',
-                content: `${processedMessages[sysIdx].content}\n\n${searchSystemPrompt}`,
+                content: `${processedMessages[sysIdx].content}\n\n${searchSystemInstruction}`,
               };
             } else {
               processedMessages.unshift({
                 role: 'system',
-                content: searchSystemPrompt,
+                content: searchSystemInstruction,
               });
+            }
+
+            // 2. Attach real-time search context directly to the active user prompt
+            const updatedUserIdx = processedMessages.map(m => m.role).lastIndexOf('user');
+            if (updatedUserIdx >= 0) {
+              const origQuery = processedMessages[updatedUserIdx].content;
+              processedMessages[updatedUserIdx] = {
+                role: 'user',
+                content: `=== REAL-TIME WEB SEARCH RESULTS ===\n${searchContext}\n=== END SEARCH RESULTS ===\n\nUser Question: ${origQuery}`,
+              };
             }
           }
         } catch (sErr) {
@@ -240,6 +253,26 @@ export async function POST(req: NextRequest) {
       headers.set('Connection', 'keep-alive');
       if (searchResults.length > 0) {
         headers.set('X-Search-Sources-Count', String(searchResults.length));
+      }
+
+      if (searchResults.length > 0 && upstreamRes.body) {
+        const encoder = new TextEncoder();
+        const initialChunk = encoder.encode(
+          `data: ${JSON.stringify({ type: 'search_sources', search_sources: searchResults })}\n\n`
+        );
+        const transformStream = new TransformStream({
+          start(controller) {
+            controller.enqueue(initialChunk);
+          },
+          transform(chunk, controller) {
+            controller.enqueue(chunk);
+          },
+        });
+
+        return new Response(upstreamRes.body.pipeThrough(transformStream), {
+          status: 200,
+          headers,
+        });
       }
 
       return new Response(upstreamRes.body, {

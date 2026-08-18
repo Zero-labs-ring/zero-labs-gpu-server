@@ -138,10 +138,9 @@ with open(out_path, 'r', encoding='utf-8') as f:
 
 checks = {
     'huggingface_hub==0.25.2': 'FIX 1 (pin hf_hub)',
-    'XetProgressReporter': 'FIX 2 comment',
-    'timeout=180': 'FIX 3a (timeout)',
-    'SSM_CPU / _SSM var': '_SSM',
-    'split-mode layer': 'FIX 3b (split-mode layer)',
+    'cu124': 'FIX 2 (CUDA 12.4 wheel support)',
+    'tensor_split': 'FIX 3 (Dual-GPU tensor_split [0.5, 0.5])',
+    'CMAKE_ARGS': 'FIX 4 (CUDA CMAKE compilation fallback)',
 }
 print("\n=== VERIFICATION ===")
 for val, label in checks.items():

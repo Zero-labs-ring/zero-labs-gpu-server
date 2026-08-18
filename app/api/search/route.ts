@@ -53,62 +53,113 @@ export async function searchWeb(query: string, limit = 5): Promise<SearchResultI
 
   const results: SearchResultItem[] = [];
 
-  // 1. Primary Engine: Google Search RSS Feed (100% Unblocked on Cloud Serverless, Real-Time)
+  // 1. Primary Engine: DuckDuckGo HTML Web Search (Global web search, instant, unblocked)
   try {
-    const gnewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(cleanQ)}&hl=en-US&gl=US&ceid=US:en`;
-    const res = await fetch(gnewsUrl, {
+    const ddgHtmlUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(cleanQ)}`;
+    const res = await fetch(ddgHtmlUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/rss+xml,application/xml,text/xml;q=0.9',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
       signal: AbortSignal.timeout(5000),
     });
 
     if (res.ok) {
-      const xml = await res.text();
-      const itemBlocks = xml.split('<item>').slice(1);
+      const html = await res.text();
+      const blocks = html.split('<div class="result results_links');
 
-      for (const item of itemBlocks) {
+      for (const block of blocks.slice(1)) {
         if (results.length >= limit) break;
 
-        const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
-        const linkMatch = item.match(/<link>([\s\S]*?)<\/link>/i);
-        const descMatch = item.match(/<description>([\s\S]*?)<\/description>/i);
-        const sourceMatch = item.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
+        const titleMatch = block.match(/class="result__a"[^>]*>([\s\S]*?)<\/a>/i);
+        const linkMatch = block.match(/href="([^"]+)"/i);
+        const snippetMatch = block.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/(?:a|div)>/i);
 
         if (titleMatch && linkMatch) {
           const rawTitle = decodeHtmlEntities(titleMatch[1]);
-          const url = decodeHtmlEntities(linkMatch[1]);
-          const snippet = descMatch ? decodeHtmlEntities(descMatch[1]) : `Latest news and updates on ${cleanQ}`;
-          let source = sourceMatch ? decodeHtmlEntities(sourceMatch[1]) : '';
-          
-          if (!source && rawTitle.includes(' - ')) {
-            const parts = rawTitle.split(' - ');
-            source = parts[parts.length - 1];
+          const rawLink = linkMatch[1];
+          let cleanUrl = rawLink;
+          if (rawLink.includes('uddg=')) {
+            const match = rawLink.match(/uddg=([^&]+)/);
+            if (match) cleanUrl = decodeURIComponent(match[1]);
           }
 
-          if (url && rawTitle) {
+          const snippet = snippetMatch ? decodeHtmlEntities(snippetMatch[1]) : '';
+
+          if (rawTitle && cleanUrl.startsWith('http') && !results.some((r) => r.url === cleanUrl)) {
             results.push({
               title: rawTitle,
-              url,
-              snippet,
-              source: source || 'Google Real-Time Search',
+              url: cleanUrl,
+              snippet: snippet || `Real-time web search result for ${cleanQ}`,
+              source: 'DuckDuckGo Web Search',
             });
           }
         }
       }
     }
   } catch (err) {
-    console.warn('Google Real-Time Search warning:', err);
+    console.warn('DuckDuckGo Web Search warning:', err);
   }
 
-  // 2. Secondary Engine: Wikipedia Search API (Authoritative technical/encyclopedic concepts)
+  // 2. Secondary Engine: Google Search RSS Feed (Real-Time News)
+  if (results.length < limit) {
+    try {
+      const gnewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(cleanQ)}&hl=en-US&gl=US&ceid=US:en`;
+      const res = await fetch(gnewsUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/rss+xml,application/xml,text/xml;q=0.9',
+        },
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (res.ok) {
+        const xml = await res.text();
+        const itemBlocks = xml.split('<item>').slice(1);
+
+        for (const item of itemBlocks) {
+          if (results.length >= limit) break;
+
+          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+          const linkMatch = item.match(/<link>([\s\S]*?)<\/link>/i);
+          const descMatch = item.match(/<description>([\s\S]*?)<\/description>/i);
+          const sourceMatch = item.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
+
+          if (titleMatch && linkMatch) {
+            const rawTitle = decodeHtmlEntities(titleMatch[1]);
+            const url = decodeHtmlEntities(linkMatch[1]);
+            const snippet = descMatch ? decodeHtmlEntities(descMatch[1]) : `Latest news and updates on ${cleanQ}`;
+            let source = sourceMatch ? decodeHtmlEntities(sourceMatch[1]) : '';
+
+            if (!source && rawTitle.includes(' - ')) {
+              const parts = rawTitle.split(' - ');
+              source = parts[parts.length - 1];
+            }
+
+            if (url && rawTitle && !results.some((r) => r.url === url)) {
+              results.push({
+                title: rawTitle,
+                url,
+                snippet,
+                source: source || 'Google Real-Time Search',
+              });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Google Real-Time Search warning:', err);
+    }
+  }
+
+  // 3. Tertiary Engine: Wikipedia Search API
   if (results.length < limit) {
     try {
       const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQ)}&format=json&utf8=1&srlimit=${limit}`;
       const wikiRes = await fetch(wikiUrl, {
         headers: { 'User-Agent': 'ZeroLabsSearch/2.0 (contact@zerolabs.org)' },
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(3000),
       });
 
       if (wikiRes.ok) {
@@ -120,46 +171,13 @@ export async function searchWeb(query: string, limit = 5): Promise<SearchResultI
           const snippet = decodeHtmlEntities(item.snippet);
           const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`;
 
-          // Avoid duplicates
-          if (!results.some(r => r.title.toLowerCase() === title.toLowerCase())) {
+          if (!results.some((r) => r.url === url || r.title.toLowerCase() === title.toLowerCase())) {
             results.push({
               title,
               url,
               snippet: snippet || `Comprehensive encyclopedia article on ${title}`,
               source: 'wikipedia.org',
             });
-          }
-        }
-      }
-    } catch { /* ignore */ }
-  }
-
-  // 3. Tertiary Engine: DuckDuckGo Instant Answers
-  if (results.length < limit) {
-    try {
-      const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(cleanQ)}&format=json&no_html=1&skip_disambig=1`;
-      const ddgRes = await fetch(ddgUrl, { signal: AbortSignal.timeout(3000) });
-      if (ddgRes.ok) {
-        const data = await ddgRes.json();
-        if (data.AbstractText && data.AbstractURL) {
-          results.push({
-            title: data.Heading || cleanQ,
-            url: data.AbstractURL,
-            snippet: data.AbstractText,
-            source: data.AbstractSource || 'DuckDuckGo Knowledge',
-          });
-        }
-        if (Array.isArray(data.RelatedTopics)) {
-          for (const item of data.RelatedTopics) {
-            if (results.length >= limit) break;
-            if (item.Text && item.FirstURL) {
-              results.push({
-                title: item.Text.split(' - ')[0] || item.Text.slice(0, 50),
-                url: item.FirstURL,
-                snippet: item.Text,
-                source: 'DuckDuckGo Related Topic',
-              });
-            }
           }
         }
       }

@@ -369,7 +369,7 @@ function OverviewView({
               disabled={firing !== null}
               onClick={() => handleLaunch('pro')}
             >
-              {firing === 'pro' ? 'Launching...' : `Deploy Pro Node ${selectedAccountId !== 'auto' ? `(@${accounts.find(a=>a.id===selectedAccountId)?.username})` : ''}`}
+              {firing === 'pro' ? 'Launching...' : `Deploy Pro Node ${selectedAccountId !== 'auto' ? `(@${accounts.find(a => a.id === selectedAccountId)?.username})` : ''}`}
             </button>
             <button className="btn btn-secondary" onClick={() => onNavigate('sessions')}>Inspect</button>
           </div>
@@ -392,7 +392,7 @@ function OverviewView({
               disabled={firing !== null}
               onClick={() => handleLaunch('ultra')}
             >
-              {firing === 'ultra' ? 'Launching...' : `Deploy Ultra Node ${selectedAccountId !== 'auto' ? `(@${accounts.find(a=>a.id===selectedAccountId)?.username})` : ''}`}
+              {firing === 'ultra' ? 'Launching...' : `Deploy Ultra Node ${selectedAccountId !== 'auto' ? `(@${accounts.find(a => a.id === selectedAccountId)?.username})` : ''}`}
             </button>
             <button className="btn btn-secondary" onClick={() => onNavigate('sessions')}>Inspect</button>
           </div>
@@ -429,36 +429,36 @@ function OverviewView({
                 activeSessions.map(s => {
                   const isTerminating = s.status === 'dead';
                   return (
-                  <tr key={s.id}>
-                    <td style={{ fontWeight: 500, color: 'var(--text-primary)', opacity: isTerminating ? 0.6 : 1 }}>{s.model === 'pro' ? 'Titan Pro 9B' : 'Titan Ultra 27B'}</td>
-                    <td>
-                      <span className={`badge ${s.status === 'ready' ? 'badge-live' : (isTerminating ? 'badge-offline' : 'badge-warming')}`}>
-                        {isTerminating ? 'terminating' : s.status}
-                      </span>
-                    </td>
-                    <td style={{ fontFamily: 'Geist Mono', fontSize: 11.5, opacity: isTerminating ? 0.6 : 1 }}>
-                      {s.endpoints?.[0]?.tunnel_url || 'Acquiring...'}
-                    </td>
-                    <td style={{ color: 'var(--text-muted)' }}>{ago(s.ready_at || s.pushed_at)}</td>
-                    <td style={{ opacity: isTerminating ? 0.6 : 1 }}>{s.total_concurrent || 32} reqs</td>
-                    <td>
-                      {isTerminating ? (
-                        <span style={{ color: 'var(--text-dim)', fontSize: 11 }}>shutting down on Kaggle...</span>
-                      ) : (
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={async () => {
-                            if (confirm(`Terminate ${s.model.toUpperCase()} GPU session?`)) {
-                              await apiFetch(`/api/sessions/${s.id}`, { method: 'DELETE' });
-                              onRefresh();
-                            }
-                          }}
-                        >
-                          Terminate
-                        </button>
-                      )}
-                    </td>
-                  </tr>
+                    <tr key={s.id}>
+                      <td style={{ fontWeight: 500, color: 'var(--text-primary)', opacity: isTerminating ? 0.6 : 1 }}>{s.model === 'pro' ? 'Titan Pro 9B' : 'Titan Ultra 27B'}</td>
+                      <td>
+                        <span className={`badge ${s.status === 'ready' ? 'badge-live' : (isTerminating ? 'badge-offline' : 'badge-warming')}`}>
+                          {isTerminating ? 'terminating' : s.status}
+                        </span>
+                      </td>
+                      <td style={{ fontFamily: 'Geist Mono', fontSize: 11.5, opacity: isTerminating ? 0.6 : 1 }}>
+                        {s.endpoints?.[0]?.tunnel_url || 'Acquiring...'}
+                      </td>
+                      <td style={{ color: 'var(--text-muted)' }}>{ago(s.ready_at || s.pushed_at)}</td>
+                      <td style={{ opacity: isTerminating ? 0.6 : 1 }}>{s.total_concurrent || 32} reqs</td>
+                      <td>
+                        {isTerminating ? (
+                          <span style={{ color: 'var(--text-dim)', fontSize: 11 }}>shutting down on Kaggle...</span>
+                        ) : (
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={async () => {
+                              if (confirm(`Terminate ${s.model.toUpperCase()} GPU session?`)) {
+                                await apiFetch(`/api/sessions/${s.id}`, { method: 'DELETE' });
+                                onRefresh();
+                              }
+                            }}
+                          >
+                            Terminate
+                          </button>
+                        )}
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -894,7 +894,7 @@ function StealthView() {
   useEffect(() => {
     apiFetch('/api/stealth').then(d => {
       if (Array.isArray(d)) setAccounts(d);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   return (
@@ -953,7 +953,7 @@ function ConfigView() {
         d.forEach(r => { map[r.key] = r.value; });
         setEdits(map);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const handleSave = async (key: string) => {
