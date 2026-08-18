@@ -1,0 +1,23 @@
+[{"stream_name":"stderr","time":6.5071004,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":6.5071491219999995,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":6.507153753,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":6.507156733,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":7.074593217,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.0746252179999995,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.074634865,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.074638036,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":8.176844873,"data":"Detected 1 GPU(s)\n"}
+,{"stream_name":"stdout","time":8.176868098,"data":"Tesla P100-PCIE-16GB, 16384 MiB\n"}
+,{"stream_name":"stdout","time":8.176871208,"data":"Work dir: /tmp/zeropro\n"}
+,{"stream_name":"stdout","time":8.176873549,"data":"  Disk free (/tmp/zeropro): 1102.5 GB\n"}
+,{"stream_name":"stdout","time":8.189930574,"data":"HF_TOKEN        : hf_NPNLeNEvjCwgACuJm...\n"}
+,{"stream_name":"stdout","time":8.189951621,"data":"API_KEY         : zerotech13287\n"}
+,{"stream_name":"stdout","time":8.18995674,"data":"SUPABASE_URL    : https://uwarhuyiqtxcuxbctwlr.supabase.co\n"}
+,{"stream_name":"stdout","time":8.189961136,"data":"SUPABASE_KEY    : eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...\n"}
+,{"stream_name":"stdout","time":8.189964699,"data":"NOTEBOOK_SECRET : changeme_notebook_secret_here\n"}
+,{"stream_name":"stdout","time":8.189968833,"data":"All secrets loaded OK\n"}
+,{"stream_name":"stdout","time":8.350534352,"data":"[1/4] Resizing /dev/shm...\n"}
+,{"stream_name":"stdout","time":8.350563107,"data":"  /dev/shm already 13824MB\n"}
+,{"stream_name":"stdout","time":8.350568594,"data":"\n"}
+,{"stream_name":"stdout","time":8.350572622,"data":"[2/4] Installing vLLM 0.27.1...\n"}
+]

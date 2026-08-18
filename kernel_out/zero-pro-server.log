@@ -1,0 +1,76 @@
+[{"stream_name":"stderr","time":7.82652157,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.827558432,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.827564329,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.827567696,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":8.534349045999999,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.534388752,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.534393141,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.534396393,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":9.811688834,"data":"Detected 1 GPU(s)\n"}
+,{"stream_name":"stdout","time":9.811753098,"data":"Tesla P100-PCIE-16GB, 16384 MiB\n"}
+,{"stream_name":"stdout","time":9.811757979,"data":"Work dir: /tmp/zeropro\n"}
+,{"stream_name":"stdout","time":9.81176192,"data":"  Disk free (/tmp/zeropro): 1102.5 GB\n"}
+,{"stream_name":"stdout","time":9.827120759,"data":"HF_TOKEN        : hf_NPNLeNEvjCwgACuJm...\n"}
+,{"stream_name":"stdout","time":9.827156074,"data":"API_KEY         : zerotech13287\n"}
+,{"stream_name":"stdout","time":9.827163006,"data":"SUPABASE_URL    : https://uwarhuyiqtxcuxbctwlr.supabase.co\n"}
+,{"stream_name":"stdout","time":9.827168569,"data":"SUPABASE_KEY    : eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...\n"}
+,{"stream_name":"stdout","time":9.827173675000001,"data":"NOTEBOOK_SECRET : changeme_notebook_secret_here\n"}
+,{"stream_name":"stdout","time":9.827179043,"data":"All secrets loaded OK\n"}
+,{"stream_name":"stdout","time":9.981607944,"data":"[1/4] Resizing /dev/shm...\n"}
+,{"stream_name":"stdout","time":9.98165067,"data":"  /dev/shm already 13824MB\n"}
+,{"stream_name":"stdout","time":9.981666383,"data":"\n"}
+,{"stream_name":"stdout","time":9.981672661,"data":"[2/4] Installing vLLM 0.27.1...\n"}
+,{"stream_name":"stdout","time":260.740377733,"data":"opentelemetry-exporter-gcp-logging 1.11.0a0 requires opentelemetry-sdk\u003c1.39.0,\u003e=1.35.0, but you have opentelemetry-sdk 1.44.0 which is incompatible.\n"}
+,{"stream_name":"stdout","time":260.740425636,"data":"gradio 5.50.0 requires starlette\u003c1.0,\u003e=0.40.0, but you have starlette 1.6.0 which is incompatible.\n"}
+,{"stream_name":"stdout","time":261.366603012,"data":"opentelemetry-exporter-gcp-logging 1.11.0a0 requires opentelemetry-sdk\u003c1.39.0,\u003e=1.35.0, but you have opentelemetry-sdk 1.44.0 which is incompatible.\n"}
+,{"stream_name":"stdout","time":261.366630175,"data":"gradio 5.50.0 requires starlette\u003c1.0,\u003e=0.40.0, but you have starlette 1.6.0 which is incompatible.\n"}
+,{"stream_name":"stdout","time":270.984539311,"data":"  vLLM 0.27.1 OK\n"}
+,{"stream_name":"stdout","time":270.984588962,"data":"\n"}
+,{"stream_name":"stdout","time":270.984594025,"data":"[3/4] Installing FastAPI + uvicorn + httpx + safetensors...\n"}
+,{"stream_name":"stdout","time":275.304694609,"data":"  OK\n"}
+,{"stream_name":"stdout","time":275.304731788,"data":"\n"}
+,{"stream_name":"stdout","time":275.304738685,"data":"[4/4] Installing cloudflared...\n"}
+,{"stream_name":"stdout","time":275.786867388,"data":"  OK\n"}
+,{"stream_name":"stdout","time":275.786929184,"data":"\n"}
+,{"stream_name":"stdout","time":275.786954961,"data":"[+] Pinning torch 2.13.0...\n"}
+,{"stream_name":"stdout","time":279.440926295,"data":"  torch 2.13.0+cu130\n"}
+,{"stream_name":"stdout","time":279.440977365,"data":"\n"}
+,{"stream_name":"stdout","time":279.440983828,"data":"ALL DEPS OK\n"}
+,{"stream_name":"stdout","time":280.768403678,"data":"Downloading ZEROLABS1/ornith-9b-merged-v5...\n"}
+,{"stream_name":"stdout","time":358.759983808,"data":"Downloaded in 78.0s\n"}
+,{"stream_name":"stdout","time":358.760034814,"data":"  Disk free (/tmp/zeropro): 1071.9 GB\n"}
+,{"stream_name":"stdout","time":358.760042252,"data":"Model: ['Qwen3_5ForConditionalGeneration'] | type: qwen3_5\n"}
+,{"stream_name":"stdout","time":358.760066904,"data":"\n"}
+,{"stream_name":"stdout","time":358.760075006,"data":"[PATCH] Image processor config...\n"}
+,{"stream_name":"stdout","time":358.760083315,"data":"  Fetching: ['LICENSE', 'README.md', 'preprocessor_config.json', 'video_preprocessor_config.json']\n"}
+,{"stream_name":"stdout","time":358.964405789,"data":"  Copied: LICENSE\n"}
+,{"stream_name":"stdout","time":359.015412887,"data":"  Copied: README.md\n"}
+,{"stream_name":"stdout","time":359.165986988,"data":"  Copied: preprocessor_config.json\n"}
+,{"stream_name":"stdout","time":359.347511798,"data":"  Copied: video_preprocessor_config.json\n"}
+,{"stream_name":"stdout","time":359.347558569,"data":"  Patch OK\n"}
+,{"stream_name":"stdout","time":359.347564117,"data":"\n"}
+,{"stream_name":"stdout","time":359.347568014,"data":"[MTP GRAFT] Downloading donor...\n"}
+,{"stream_name":"stdout","time":437.769081322,"data":"  Donor: Qwen/Qwen3.5-9B\n"}
+,{"stream_name":"stdout","time":440.834818038,"data":"  Found 15 MTP tensors\n"}
+,{"stream_name":"stdout","time":452.704585028,"data":"  MTP graft OK — 486.6MB\n"}
+,{"stream_name":"stdout","time":452.704655349,"data":"\n"}
+,{"stream_name":"stdout","time":452.704661015,"data":"Model  : /tmp/zeropro/ornith-9b\n"}
+,{"stream_name":"stdout","time":452.704664984,"data":"Quant  : fp16\n"}
+,{"stream_name":"stdout","time":452.704668614,"data":"MTP    : ON\n"}
+,{"stream_name":"stdout","time":452.864540278,"data":"  Waiting for GPU VRAM to drain...\n"}
+,{"stream_name":"stdout","time":452.866236661,"data":"  GPU VRAM cleared ([16270] MB free)\n"}
+,{"stream_name":"stdout","time":452.866254428,"data":"vLLM command:\n"}
+,{"stream_name":"stdout","time":452.866260657,"data":"  --served-model-name ornith-9b\n"}
+,{"stream_name":"stdout","time":452.866266363,"data":"  --model /tmp/zeropro/ornith-9b\n"}
+,{"stream_name":"stdout","time":452.866271837,"data":"  --port 8001\n"}
+,{"stream_name":"stdout","time":452.866277054,"data":"  --dtype float16\n"}
+,{"stream_name":"stdout","time":452.86628302,"data":"  --gpu-memory-utilization 0.90\n"}
+,{"stream_name":"stdout","time":452.866288414,"data":"  --max-num-seqs 64\n"}
+,{"stream_name":"stdout","time":452.866293828,"data":"  --max-model-len 4096\n"}
+,{"stream_name":"stdout","time":452.866299462,"data":"  --enforce-eager   --trust-remote-code   --disable-custom-all-reduce   --tensor-parallel-size 1\n"}
+,{"stream_name":"stdout","time":452.866305615,"data":"  --speculative-config {\"method\": \"mtp\", \"num_speculative_tokens\": 1}\n"}
+,{"stream_name":"stdout","time":452.866311802,"data":"\n"}
+,{"stream_name":"stdout","time":452.972109871,"data":"Starting vLLM — Qwen3.5 Triton warmup takes 8-10 min on T4, be patient...\n"}
+,{"stream_name":"stdout","time":483.128875103,"data":"  [30s] (APIServer pid=217) INFO 08-12 08:15:27 [api_utils.py:345]\n"}
+,{"stream_name":"stdout","time":483.128936957,"data":"  [30s] (APIServer pid=217) INFO 08-12 08:15:27 [api_utils.py:273] non-default args: {'port': 8001, 'model': '/tmp/zeropro/ornith-9b', 'trust_remote_code': True, 'dtype\n"}
+]

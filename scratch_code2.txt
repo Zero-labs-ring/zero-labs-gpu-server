@@ -1,0 +1,68 @@
+# ── Direct push to Supabase gateway_urls via notebook_push_url() RPC ──
+# Registers the tunnel URL in Supabase immediately when ready.
+# The url-catcher cron still runs as fallback every 2 min.
+import urllib.request, json as _json, os
+
+def supabase_push_url(tunnel_url, model='pro', api_key=''):
+    """POST tunnel URL to Supabase notebook_push_url RPC."""
+    sb_url = 'https://uwarhuyiqtxcuxbctwlr.supabase.co'
+    sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3YXJodXlpcXR4Y3V4YmN0d2xyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjQyMjA2MCwiZXhwIjoyMTAxOTk4MDYwfQ.nwBZ3rlJ7vQxiE_cD6DWFN66inlYv9FfcCqqvKF5gJE'
+    nb_secret = 'changeme_notebook_secret_here'
+
+    if not sb_url or not sb_key:
+        print('SKIP: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set')
+        return None
+
+    payload = _json.dumps({
+        'p_model': model,
+        'p_tunnel_url': tunnel_url,
+        'p_api_key': api_key,
+        'p_secret': nb_secret,
+    }).encode()
+
+    endpoint = sb_url.rstrip('/') + '/rest/v1/rpc/notebook_push_url'
+    req = urllib.request.Request(
+        endpoint, data=payload,
+        headers={
+            'Content-Type': 'application/json',
+            'apikey': sb_key,
+            'Authorization': 'Bearer ' + sb_key,
+        },
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = _json.loads(resp.read())
+            print('✅ Supabase push OK:', result)
+            return result
+    except urllib.error.HTTPError as e:
+        print('❌ Supabase push HTTP', e.code, e.read().decode())
+    except Exception as e:
+        print('❌ Supabase push error:', e)
+    return None
+
+def supabase_heartbeat(model='pro'):
+    """Keep gateway_urls.last_seen_at fresh. Call every 5 min."""
+    sb_url = 'https://uwarhuyiqtxcuxbctwlr.supabase.co'
+    sb_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3YXJodXlpcXR4Y3V4YmN0d2xyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjQyMjA2MCwiZXhwIjoyMTAxOTk4MDYwfQ.nwBZ3rlJ7vQxiE_cD6DWFN66inlYv9FfcCqqvKF5gJE'
+    nb_secret = 'changeme_notebook_secret_here'
+    payload = _json.dumps({'p_model': model, 'p_secret': nb_secret}).encode()
+    req = urllib.request.Request(
+        sb_url.rstrip('/') + '/rest/v1/rpc/notebook_heartbeat',
+        data=payload,
+        headers={'Content-Type': 'application/json', 'apikey': sb_key, 'Authorization': 'Bearer ' + sb_key},
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            res = _json.loads(r.read())
+            return res
+    except Exception as e:
+        print('Heartbeat push failed:', e)
+        return None
+
+# Push immediately when tunnel is ready
+if PORT in tunnel_urls:
+    supabase_push_url(tunnel_urls[PORT], model='pro', api_key=API_KEY)
+else:
+    print('WARNING: No tunnel URL captured, skipping Supabase push')

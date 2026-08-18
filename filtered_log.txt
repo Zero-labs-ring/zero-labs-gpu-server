@@ -1,0 +1,678 @@
+L98: GPU T4 x2
+L117: 8.8s	9	No local GGUF — will check HF next.
+L120: 9.1s	12	STAGE: pull_from_hub
+L122: 10.0s	14	Could not list ZEROLABS1/titan-ultra-gguf: 404 Client Error. (Request ID: Root=1-6a7c5fe9-02012aa13dbcda80267f41dd;9004c7d2-ecea-4029-a392-50fe081ceff2)
+L124: 10.0s	16	Repository Not Found for url: https://huggingface.co/api/models/ZEROLABS1/titan-ultra-gguf/tree/main?recursive=true&expand=false.
+L128: 10.0s	20	ZEROLABS1/titan-ultra-gguf/titan-ultra-Q4_K_M.gguf not found on HF — will run full pipeline.
+L131: 10.1s	23	STAGE: preflight_gpu
+L134: 10.1s	26	$ [nvidia-smi] attempt 1/1: nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader
+L137: 10.1s	29	[nvidia-smi] OK in 0s
+L140: 10.1s	32	STAGE: preflight_disk
+L142: 10.1s	34	Free disk /kaggle/tmp:     1102.5 GB
+L143: 10.1s	35	Free disk /kaggle/working: 20.9 GB
+L144: 10.1s	36	Free disk at /kaggle/tmp: 1102.5 GB (need >= 20.0 GB)
+L147: 10.2s	39	STAGE: hf_auth
+L149: 10.2s	41	Confirmed read access to ZEROLABS1/titan-ultra-merged (private=False)
+L153: 10.3s	45	STAGE: download_model
+L155: 10.3s	47	Free disk at /kaggle/tmp: 1102.5 GB (need >= 63.6 GB)
+L156: 237.4s	48	Download verified: 15 shard(s) in /kaggle/tmp/titan-ultra-merged
+L159: 237.6s	51	STAGE: fetch_llamacpp_source
+L164: 249.3s	56	[clone-llamacpp-src] OK in 12s
+L167: 249.3s	59	STAGE: fetch_llamacpp_binaries
+L172: 249.6s	64	[resolve-latest-llamacpp-release] OK in 0s
+L184: 251.1s	76	[download-llamacpp-bin] OK in 1s
+L187: 252.5s	79	[extract-llamacpp-bin] OK in 1s
+L190: 252.5s	82	$ [verify-binary-llama-server] attempt 1/1: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-server --help
+L229: 253.4s	121	-fa,   --flash-attn [on|off|auto]       set Flash Attention use ('on', 'off', or 'auto', default: 'auto')
+L324: 253.4s	216	                                        - row: split weight across GPUs by rows (parallelized)
+L325: 253.4s	217	                                        - tensor: split weights and KV across GPUs (parallelized,
+L626: 253.4s	518	-np,   --parallel N                     number of server slots (default: -1, -1 = auto)
+L751: 253.4s	643	-to,   --timeout N                      server read/write timeout in seconds (default: 3600)
+L752: 253.4s	644	                                        (env: LLAMA_ARG_TIMEOUT)
+L884: 254.1s	776	[verify-binary-llama-server] OK in 2s
+L886: 254.1s	778	$ [verify-binary-llama-quantize] attempt 1/1: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-quantize --help
+L887: 254.1s	779	usage: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-quantize [--help] [--allow-requantize] [--leave-output-tensor] [--pure] [--imatrix] [--include-weights]
+L892: 254.1s	784	  --allow-requantize
+L893: 254.1s	785	                                      allow requantizing tensors that have already been quantized
+L894: 254.1s	786	                                      WARNING: this can severely reduce quality compared to quantizing
+L897: 254.1s	789	                                      leave output.weight un(re)quantized
+L898: 254.1s	790	                                      increases model size but may also increase quality, especially when requantizing
+L900: 254.1s	792	                                      disable k-quant mixtures and quantize all tensors to the same type
+L912: 254.1s	804	                                      quantize this tensor to this ggml_type
+L913: 254.1s	805	                                      this is an advanced option to selectively quantize tensors. may be specified multiple times.
+L916: 254.1s	808	                                      list of tensors to quantize to a specific ggml_type
+L917: 254.1s	809	                                      this is an advanced option to selectively quantize a long list of tensors.
+L923: 254.1s	815	                                      generate quantized model in the same shards as input
+L925: 254.1s	817	                                      override model metadata by key in the quantized model. may be specified multiple times.
+L928: 254.1s	820	                                      calculate and show the final quantization size without performing quantization
+L929: 254.1s	821	                                      example: llama-quantize --dry-run model-f32.gguf Q4_K
+L934: 254.1s	826	 allowed quantization types
+L937: 254.1s	829	  40  or  Q1_0    :  1.125 bpw quantization
+L938: 254.1s	830	  41  or  Q2_0    :  2.25 bpw quantization (group 64)
+L944: 254.1s	836	  19  or  IQ2_XXS :  2.06 bpw quantization
+L945: 254.1s	837	  20  or  IQ2_XS  :  2.31 bpw quantization
+L946: 254.1s	838	  28  or  IQ2_S   :  2.5  bpw quantization
+L947: 254.1s	839	  29  or  IQ2_M   :  2.7  bpw quantization
+L948: 254.1s	840	  24  or  IQ1_S   :  1.56 bpw quantization
+L949: 254.1s	841	  31  or  IQ1_M   :  1.75 bpw quantization
+L954: 254.1s	846	  23  or  IQ3_XXS :  3.06 bpw quantization
+L955: 254.1s	847	  26  or  IQ3_S   :  3.44 bpw quantization
+L956: 254.1s	848	  27  or  IQ3_M   :  3.66 bpw quantization mix
+L958: 254.1s	850	  22  or  IQ3_XS  :  3.3 bpw quantization
+L962: 254.1s	854	  25  or  IQ4_NL  :  4.50 bpw non-linear quantization
+L963: 254.1s	855	  30  or  IQ4_XS  :  4.25 bpw non-linear quantization
+L975: 254.1s	867	          COPY    : only copy tensors, no quantizing
+L976: 254.1s	868	[verify-binary-llama-quantize] FAILED (exit 1) in 0s
+L977: 254.1s	869	Binaries ready: server=/kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-server  quantize=/kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-quantize
+L980: 254.1s	872	STAGE: install_converter_deps
+L983: 254.1s	875	$ [pip-install-converter-deps] attempt 1/2: pip install -q --upgrade --no-cache-dir gguf 'numpy<2' sentencepiece protobuf 'transformers>=4.46' 'huggingface_hub>=0.24'
+L1023: 277.3s	915	[pip-install-converter-deps] OK in 23s
+L1026: 277.5s	918	STAGE: convert_to_gguf_q8_0
+L1028: 277.5s	920	Checkpoint on disk: ~55.6 GB at /kaggle/tmp/titan-ultra-merged
+L1029: 277.5s	921	Free disk at /kaggle/tmp: 1046.2 GB (need >= 38.2 GB)
+L1031: 277.5s	923	$ [convert-hf-to-gguf-q8_0] attempt 1/1: python /kaggle/tmp/llama-cpp-src/convert_hf_to_gguf.py /kaggle/tmp/titan-ultra-merged --outfile /kaggle/tmp/titan-ultra-q8_0.gguf --outtype q8_0
+L1032: 292.3s	924	INFO:hf-to-gguf:Loading model: titan-ultra-merged
+L1932: 300.6s	1824	INFO:hf-to-gguf:Set model quantization version
+L1948: 302.8s	1840	                    {{- raise_exception('System message cannot contain images.') }}
+L1959: 302.8s	1851	                    {{- raise_exception('System message cannot contain videos.') }}
+L1971: 302.8s	1863	                {{- raise_exception('Unexpected item type in content.') }}
+L1977: 302.8s	1869	        {{- raise_exception('Unexpected content type.') }}
+L1981: 302.8s	1873	    {{- raise_exception('No messages provided.') }}
+L2017: 302.8s	1909	    {{- raise_exception('No user query found in messages.') }}
+L2023: 302.8s	1915	            {{- raise_exception('System message must be at the beginning.') }}
+L2082: 302.8s	1974	        {{- raise_exception('Unexpected message role.') }}
+L2094: 302.8s	1986	INFO:gguf.gguf_writer:/kaggle/tmp/titan-ultra-q8_0.gguf: n_tensors = 866, total_size = 29.0G
+L2504: 990.3s	2396	INFO:hf-to-gguf:Model successfully exported to /kaggle/tmp/titan-ultra-q8_0.gguf
+L2505: 992.5s	2397	[convert-hf-to-gguf-q8_0] OK in 715s
+L2506: 992.5s	2398	GGUF Q8_0 written: /kaggle/tmp/titan-ultra-q8_0.gguf (29.0 GB)
+L2507: 992.5s	2399	Freeing checkpoint at /kaggle/tmp/titan-ultra-merged (~55.6 GB)
+L2508: 994.8s	2400	Free disk now: 1072.7 GB
+L2511: 995.0s	2403	STAGE: quantize
+L2513: 995.0s	2405	Free disk at /kaggle/tmp: 1072.7 GB (need >= 22.9 GB)
+L2515: 995.0s	2407	$ [quantize-Q4_K_M] attempt 1/1: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-quantize --allow-requantize /kaggle/tmp/titan-ultra-q8_0.gguf /kaggle/working/titan-ultra-Q4_K_M.gguf Q4_K_M
+L2521: 995.5s	2413	llama_quantize: quantizing '/kaggle/tmp/titan-ultra-q8_0.gguf' to '/kaggle/working/titan-ultra-Q4_K_M.gguf' as Q4_K_M
+L2522: 995.5s	2414	llama_model_loader: loaded meta data with 41 key-value pairs and 866 tensors from /kaggle/tmp/titan-ultra-q8_0.gguf (version GGUF V3 (latest))
+L2554: 995.5s	2446	llama_model_loader: - kv  30:               general.quantization_version u32              = 2
+L2567: 1032.2s	2459	[   1/ 866] output.weight                        - [  5120, 248320,      1,      1], type =   q8_0, converting to q6_K .. size =  1288.28 MiB ->   994.63 MiB
+L2569: 1105.5s	2461	[   3/ 866] token_embd.weight                    - [  5120, 248320,      1,      1], type =   q8_0, converting to q4_K .. size =  1288.28 MiB ->   682.03 MiB
+L2570: 1107.6s	2462	[   4/ 866] blk.0.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2572: 1108.7s	2464	[   6/ 866] blk.0.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2573: 1110.5s	2465	[   7/ 866] blk.0.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2574: 1115.5s	2466	[   8/ 866] blk.0.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2575: 1120.5s	2467	[   9/ 866] blk.0.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2578: 1120.5s	2470	[  12/ 866] blk.0.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2579: 1120.5s	2471	[  13/ 866] blk.0.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2583: 1122.4s	2475	[  17/ 866] blk.0.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2584: 1124.1s	2476	[  18/ 866] blk.1.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2586: 1125.2s	2478	[  20/ 866] blk.1.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2587: 1127.2s	2479	[  21/ 866] blk.1.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2588: 1132.3s	2480	[  22/ 866] blk.1.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2589: 1137.8s	2481	[  23/ 866] blk.1.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2592: 1137.8s	2484	[  26/ 866] blk.1.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2593: 1137.8s	2485	[  27/ 866] blk.1.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2597: 1139.5s	2489	[  31/ 866] blk.1.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2598: 1141.3s	2490	[  32/ 866] blk.2.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2600: 1142.5s	2492	[  34/ 866] blk.2.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2601: 1144.6s	2493	[  35/ 866] blk.2.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2602: 1149.7s	2494	[  36/ 866] blk.2.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2603: 1154.7s	2495	[  37/ 866] blk.2.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2606: 1154.7s	2498	[  40/ 866] blk.2.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2607: 1154.7s	2499	[  41/ 866] blk.2.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2611: 1156.6s	2503	[  45/ 866] blk.2.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2612: 1156.9s	2504	[  46/ 866] blk.3.attn_k.weight                  - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2615: 1158.6s	2507	[  49/ 866] blk.3.attn_output.weight             - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2616: 1162.2s	2508	[  50/ 866] blk.3.attn_q.weight                  - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2618: 1162.2s	2510	[  52/ 866] blk.3.attn_v.weight                  - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L2619: 1164.3s	2511	[  53/ 866] blk.3.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2620: 1169.5s	2512	[  54/ 866] blk.3.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2621: 1174.4s	2513	[  55/ 866] blk.3.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2623: 1176.1s	2515	[  57/ 866] blk.4.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2625: 1177.2s	2517	[  59/ 866] blk.4.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2626: 1179.1s	2518	[  60/ 866] blk.4.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2627: 1184.0s	2519	[  61/ 866] blk.4.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2628: 1188.9s	2520	[  62/ 866] blk.4.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2631: 1188.9s	2523	[  65/ 866] blk.4.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2632: 1188.9s	2524	[  66/ 866] blk.4.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2636: 1190.6s	2528	[  70/ 866] blk.4.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2637: 1192.3s	2529	[  71/ 866] blk.5.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2639: 1193.4s	2531	[  73/ 866] blk.5.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2640: 1195.3s	2532	[  74/ 866] blk.5.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2641: 1200.3s	2533	[  75/ 866] blk.5.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2642: 1205.3s	2534	[  76/ 866] blk.5.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2645: 1205.3s	2537	[  79/ 866] blk.5.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2646: 1205.3s	2538	[  80/ 866] blk.5.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2650: 1207.1s	2542	[  84/ 866] blk.5.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2651: 1208.8s	2543	[  85/ 866] blk.6.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2653: 1209.9s	2545	[  87/ 866] blk.6.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2654: 1211.8s	2546	[  88/ 866] blk.6.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2655: 1216.7s	2547	[  89/ 866] blk.6.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2656: 1221.6s	2548	[  90/ 866] blk.6.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2659: 1221.6s	2551	[  93/ 866] blk.6.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2660: 1221.6s	2552	[  94/ 866] blk.6.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2664: 1223.3s	2556	[  98/ 866] blk.6.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2665: 1223.6s	2557	[  99/ 866] blk.7.attn_k.weight                  - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2668: 1225.3s	2560	[ 102/ 866] blk.7.attn_output.weight             - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2669: 1228.7s	2561	[ 103/ 866] blk.7.attn_q.weight                  - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2671: 1228.7s	2563	[ 105/ 866] blk.7.attn_v.weight                  - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L2672: 1230.8s	2564	[ 106/ 866] blk.7.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2673: 1235.7s	2565	[ 107/ 866] blk.7.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2674: 1240.8s	2566	[ 108/ 866] blk.7.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2676: 1242.6s	2568	[ 110/ 866] blk.8.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2678: 1245.4s	2570	[ 112/ 866] blk.8.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2679: 1250.3s	2571	[ 113/ 866] blk.8.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2680: 1255.1s	2572	[ 114/ 866] blk.8.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2681: 1260.0s	2573	[ 115/ 866] blk.8.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2684: 1260.0s	2576	[ 118/ 866] blk.8.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2685: 1260.0s	2577	[ 119/ 866] blk.8.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2689: 1261.9s	2581	[ 123/ 866] blk.8.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2690: 1263.5s	2582	[ 124/ 866] blk.9.attn_gate.weight               - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2692: 1266.3s	2584	[ 126/ 866] blk.9.attn_qkv.weight                - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2693: 1271.1s	2585	[ 127/ 866] blk.9.ffn_down.weight                - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2694: 1276.2s	2586	[ 128/ 866] blk.9.ffn_gate.weight                - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2695: 1281.1s	2587	[ 129/ 866] blk.9.ffn_up.weight                  - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2698: 1281.1s	2590	[ 132/ 866] blk.9.ssm_alpha.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2699: 1281.1s	2591	[ 133/ 866] blk.9.ssm_beta.weight                - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2703: 1282.8s	2595	[ 137/ 866] blk.9.ssm_out.weight                 - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2704: 1284.5s	2596	[ 138/ 866] blk.10.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2706: 1285.6s	2598	[ 140/ 866] blk.10.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2707: 1287.4s	2599	[ 141/ 866] blk.10.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2708: 1292.4s	2600	[ 142/ 866] blk.10.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2709: 1297.2s	2601	[ 143/ 866] blk.10.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2712: 1297.2s	2604	[ 146/ 866] blk.10.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2713: 1297.2s	2605	[ 147/ 866] blk.10.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2717: 1298.9s	2609	[ 151/ 866] blk.10.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2718: 1299.2s	2610	[ 152/ 866] blk.11.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2721: 1300.9s	2613	[ 155/ 866] blk.11.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2722: 1304.3s	2614	[ 156/ 866] blk.11.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2724: 1304.6s	2616	[ 158/ 866] blk.11.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2725: 1309.6s	2617	[ 159/ 866] blk.11.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2726: 1314.5s	2618	[ 160/ 866] blk.11.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2727: 1319.2s	2619	[ 161/ 866] blk.11.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2729: 1321.0s	2621	[ 163/ 866] blk.12.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2731: 1323.8s	2623	[ 165/ 866] blk.12.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2732: 1328.6s	2624	[ 166/ 866] blk.12.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2733: 1333.5s	2625	[ 167/ 866] blk.12.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2734: 1338.3s	2626	[ 168/ 866] blk.12.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2737: 1338.3s	2629	[ 171/ 866] blk.12.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2738: 1338.3s	2630	[ 172/ 866] blk.12.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2742: 1340.1s	2634	[ 176/ 866] blk.12.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2743: 1341.8s	2635	[ 177/ 866] blk.13.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2745: 1342.8s	2637	[ 179/ 866] blk.13.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2746: 1344.8s	2638	[ 180/ 866] blk.13.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2747: 1349.7s	2639	[ 181/ 866] blk.13.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2748: 1354.7s	2640	[ 182/ 866] blk.13.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2751: 1354.7s	2643	[ 185/ 866] blk.13.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2752: 1354.7s	2644	[ 186/ 866] blk.13.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2756: 1356.4s	2648	[ 190/ 866] blk.13.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2757: 1358.1s	2649	[ 191/ 866] blk.14.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2759: 1361.0s	2651	[ 193/ 866] blk.14.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2760: 1365.8s	2652	[ 194/ 866] blk.14.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2761: 1370.7s	2653	[ 195/ 866] blk.14.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2762: 1375.6s	2654	[ 196/ 866] blk.14.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2765: 1375.6s	2657	[ 199/ 866] blk.14.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2766: 1375.6s	2658	[ 200/ 866] blk.14.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2770: 1377.3s	2662	[ 204/ 866] blk.14.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2771: 1377.6s	2663	[ 205/ 866] blk.15.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2774: 1379.2s	2666	[ 208/ 866] blk.15.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2775: 1382.8s	2667	[ 209/ 866] blk.15.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2777: 1383.1s	2669	[ 211/ 866] blk.15.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2778: 1388.0s	2670	[ 212/ 866] blk.15.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2779: 1392.8s	2671	[ 213/ 866] blk.15.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2780: 1397.9s	2672	[ 214/ 866] blk.15.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2782: 1399.7s	2674	[ 216/ 866] blk.16.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2784: 1400.9s	2676	[ 218/ 866] blk.16.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2785: 1403.0s	2677	[ 219/ 866] blk.16.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2786: 1408.4s	2678	[ 220/ 866] blk.16.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2787: 1413.8s	2679	[ 221/ 866] blk.16.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2790: 1413.8s	2682	[ 224/ 866] blk.16.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2791: 1413.8s	2683	[ 225/ 866] blk.16.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2795: 1415.7s	2687	[ 229/ 866] blk.16.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2796: 1417.7s	2688	[ 230/ 866] blk.17.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2798: 1420.8s	2690	[ 232/ 866] blk.17.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2799: 1425.8s	2691	[ 233/ 866] blk.17.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2800: 1430.8s	2692	[ 234/ 866] blk.17.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2801: 1435.7s	2693	[ 235/ 866] blk.17.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2804: 1435.7s	2696	[ 238/ 866] blk.17.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2805: 1435.7s	2697	[ 239/ 866] blk.17.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2809: 1437.5s	2701	[ 243/ 866] blk.17.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2810: 1439.2s	2702	[ 244/ 866] blk.18.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2812: 1442.1s	2704	[ 246/ 866] blk.18.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2813: 1447.3s	2705	[ 247/ 866] blk.18.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2814: 1452.5s	2706	[ 248/ 866] blk.18.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2815: 1457.7s	2707	[ 249/ 866] blk.18.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2818: 1457.7s	2710	[ 252/ 866] blk.18.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2819: 1457.7s	2711	[ 253/ 866] blk.18.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2823: 1459.6s	2715	[ 257/ 866] blk.18.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2824: 1459.9s	2716	[ 258/ 866] blk.19.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2827: 1461.8s	2719	[ 261/ 866] blk.19.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2828: 1465.4s	2720	[ 262/ 866] blk.19.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2830: 1465.4s	2722	[ 264/ 866] blk.19.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L2831: 1467.5s	2723	[ 265/ 866] blk.19.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2832: 1472.7s	2724	[ 266/ 866] blk.19.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2833: 1477.5s	2725	[ 267/ 866] blk.19.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2835: 1479.2s	2727	[ 269/ 866] blk.20.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2837: 1482.1s	2729	[ 271/ 866] blk.20.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2838: 1487.1s	2730	[ 272/ 866] blk.20.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2839: 1492.0s	2731	[ 273/ 866] blk.20.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2840: 1496.9s	2732	[ 274/ 866] blk.20.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2843: 1496.9s	2735	[ 277/ 866] blk.20.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2844: 1496.9s	2736	[ 278/ 866] blk.20.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2848: 1498.7s	2740	[ 282/ 866] blk.20.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2849: 1500.4s	2741	[ 283/ 866] blk.21.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2851: 1503.3s	2743	[ 285/ 866] blk.21.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2852: 1508.4s	2744	[ 286/ 866] blk.21.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2853: 1513.6s	2745	[ 287/ 866] blk.21.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2854: 1518.6s	2746	[ 288/ 866] blk.21.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2857: 1518.6s	2749	[ 291/ 866] blk.21.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2858: 1518.6s	2750	[ 292/ 866] blk.21.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2862: 1520.4s	2754	[ 296/ 866] blk.21.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2863: 1522.2s	2755	[ 297/ 866] blk.22.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2865: 1523.3s	2757	[ 299/ 866] blk.22.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2866: 1525.2s	2758	[ 300/ 866] blk.22.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2867: 1530.3s	2759	[ 301/ 866] blk.22.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2868: 1535.2s	2760	[ 302/ 866] blk.22.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2871: 1535.2s	2763	[ 305/ 866] blk.22.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2872: 1535.2s	2764	[ 306/ 866] blk.22.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2876: 1536.9s	2768	[ 310/ 866] blk.22.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2877: 1537.2s	2769	[ 311/ 866] blk.23.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2880: 1539.0s	2772	[ 314/ 866] blk.23.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2881: 1542.4s	2773	[ 315/ 866] blk.23.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2883: 1542.7s	2775	[ 317/ 866] blk.23.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2884: 1547.7s	2776	[ 318/ 866] blk.23.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2885: 1552.7s	2777	[ 319/ 866] blk.23.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2886: 1557.4s	2778	[ 320/ 866] blk.23.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2888: 1559.1s	2780	[ 322/ 866] blk.24.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2890: 1562.0s	2782	[ 324/ 866] blk.24.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2891: 1566.9s	2783	[ 325/ 866] blk.24.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2892: 1571.9s	2784	[ 326/ 866] blk.24.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2893: 1576.7s	2785	[ 327/ 866] blk.24.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2896: 1576.7s	2788	[ 330/ 866] blk.24.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2897: 1576.7s	2789	[ 331/ 866] blk.24.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2901: 1578.4s	2793	[ 335/ 866] blk.24.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2902: 1580.1s	2794	[ 336/ 866] blk.25.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2904: 1581.3s	2796	[ 338/ 866] blk.25.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2905: 1583.2s	2797	[ 339/ 866] blk.25.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2906: 1588.2s	2798	[ 340/ 866] blk.25.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2907: 1593.0s	2799	[ 341/ 866] blk.25.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2910: 1593.0s	2802	[ 344/ 866] blk.25.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2911: 1593.0s	2803	[ 345/ 866] blk.25.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2915: 1594.8s	2807	[ 349/ 866] blk.25.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2916: 1596.5s	2808	[ 350/ 866] blk.26.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2918: 1599.3s	2810	[ 352/ 866] blk.26.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2919: 1604.1s	2811	[ 353/ 866] blk.26.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2920: 1609.0s	2812	[ 354/ 866] blk.26.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2921: 1614.1s	2813	[ 355/ 866] blk.26.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2924: 1614.1s	2816	[ 358/ 866] blk.26.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2925: 1614.1s	2817	[ 359/ 866] blk.26.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2929: 1615.8s	2821	[ 363/ 866] blk.26.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2930: 1616.1s	2822	[ 364/ 866] blk.27.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2933: 1617.8s	2825	[ 367/ 866] blk.27.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2934: 1621.2s	2826	[ 368/ 866] blk.27.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2936: 1621.5s	2828	[ 370/ 866] blk.27.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2937: 1626.3s	2829	[ 371/ 866] blk.27.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2938: 1631.2s	2830	[ 372/ 866] blk.27.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2939: 1636.1s	2831	[ 373/ 866] blk.27.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2941: 1637.8s	2833	[ 375/ 866] blk.28.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2943: 1638.9s	2835	[ 377/ 866] blk.28.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L2944: 1640.8s	2836	[ 378/ 866] blk.28.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2945: 1645.8s	2837	[ 379/ 866] blk.28.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2946: 1650.6s	2838	[ 380/ 866] blk.28.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2949: 1650.6s	2841	[ 383/ 866] blk.28.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2950: 1650.6s	2842	[ 384/ 866] blk.28.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2954: 1652.4s	2846	[ 388/ 866] blk.28.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2955: 1654.1s	2847	[ 389/ 866] blk.29.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2957: 1656.9s	2849	[ 391/ 866] blk.29.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2958: 1661.9s	2850	[ 392/ 866] blk.29.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2959: 1666.8s	2851	[ 393/ 866] blk.29.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2960: 1671.7s	2852	[ 394/ 866] blk.29.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2963: 1671.7s	2855	[ 397/ 866] blk.29.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2964: 1671.7s	2856	[ 398/ 866] blk.29.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2968: 1673.5s	2860	[ 402/ 866] blk.29.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2969: 1675.1s	2861	[ 403/ 866] blk.30.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2971: 1678.1s	2863	[ 405/ 866] blk.30.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2972: 1683.0s	2864	[ 406/ 866] blk.30.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2973: 1687.9s	2865	[ 407/ 866] blk.30.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2974: 1692.7s	2866	[ 408/ 866] blk.30.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2977: 1692.7s	2869	[ 411/ 866] blk.30.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2978: 1692.7s	2870	[ 412/ 866] blk.30.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L2982: 1694.5s	2874	[ 416/ 866] blk.30.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2983: 1694.8s	2875	[ 417/ 866] blk.31.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L2986: 1696.4s	2878	[ 420/ 866] blk.31.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2987: 1699.8s	2879	[ 421/ 866] blk.31.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L2989: 1699.8s	2881	[ 423/ 866] blk.31.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L2990: 1701.8s	2882	[ 424/ 866] blk.31.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L2991: 1706.6s	2883	[ 425/ 866] blk.31.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2992: 1711.7s	2884	[ 426/ 866] blk.31.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2994: 1713.4s	2886	[ 428/ 866] blk.32.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L2996: 1716.1s	2888	[ 430/ 866] blk.32.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L2997: 1721.0s	2889	[ 431/ 866] blk.32.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2998: 1725.8s	2890	[ 432/ 866] blk.32.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L2999: 1730.7s	2891	[ 433/ 866] blk.32.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3002: 1730.7s	2894	[ 436/ 866] blk.32.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3003: 1730.7s	2895	[ 437/ 866] blk.32.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3007: 1732.5s	2899	[ 441/ 866] blk.32.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3008: 1734.2s	2900	[ 442/ 866] blk.33.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3010: 1737.0s	2902	[ 444/ 866] blk.33.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3011: 1741.9s	2903	[ 445/ 866] blk.33.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3012: 1746.9s	2904	[ 446/ 866] blk.33.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3013: 1751.8s	2905	[ 447/ 866] blk.33.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3016: 1751.8s	2908	[ 450/ 866] blk.33.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3017: 1751.8s	2909	[ 451/ 866] blk.33.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3021: 1753.5s	2913	[ 455/ 866] blk.33.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3022: 1755.2s	2914	[ 456/ 866] blk.34.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3024: 1756.3s	2916	[ 458/ 866] blk.34.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3025: 1758.2s	2917	[ 459/ 866] blk.34.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3026: 1763.1s	2918	[ 460/ 866] blk.34.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3027: 1768.0s	2919	[ 461/ 866] blk.34.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3030: 1768.0s	2922	[ 464/ 866] blk.34.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3031: 1768.0s	2923	[ 465/ 866] blk.34.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3035: 1769.7s	2927	[ 469/ 866] blk.34.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3036: 1770.0s	2928	[ 470/ 866] blk.35.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3039: 1771.7s	2931	[ 473/ 866] blk.35.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3040: 1775.2s	2932	[ 474/ 866] blk.35.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3042: 1775.4s	2934	[ 476/ 866] blk.35.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3043: 1780.4s	2935	[ 477/ 866] blk.35.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3044: 1785.4s	2936	[ 478/ 866] blk.35.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3045: 1790.3s	2937	[ 479/ 866] blk.35.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3047: 1792.0s	2939	[ 481/ 866] blk.36.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3049: 1794.9s	2941	[ 483/ 866] blk.36.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3050: 1799.7s	2942	[ 484/ 866] blk.36.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3051: 1804.6s	2943	[ 485/ 866] blk.36.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3052: 1809.6s	2944	[ 486/ 866] blk.36.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3055: 1809.6s	2947	[ 489/ 866] blk.36.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3056: 1809.6s	2948	[ 490/ 866] blk.36.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3060: 1811.3s	2952	[ 494/ 866] blk.36.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3061: 1813.0s	2953	[ 495/ 866] blk.37.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3063: 1814.0s	2955	[ 497/ 866] blk.37.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3064: 1816.0s	2956	[ 498/ 866] blk.37.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3065: 1820.9s	2957	[ 499/ 866] blk.37.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3066: 1825.7s	2958	[ 500/ 866] blk.37.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3069: 1825.7s	2961	[ 503/ 866] blk.37.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3070: 1825.7s	2962	[ 504/ 866] blk.37.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3074: 1827.5s	2966	[ 508/ 866] blk.37.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3075: 1829.2s	2967	[ 509/ 866] blk.38.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3077: 1832.0s	2969	[ 511/ 866] blk.38.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3078: 1836.9s	2970	[ 512/ 866] blk.38.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3079: 1841.8s	2971	[ 513/ 866] blk.38.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3080: 1846.6s	2972	[ 514/ 866] blk.38.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3083: 1846.6s	2975	[ 517/ 866] blk.38.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3084: 1846.6s	2976	[ 518/ 866] blk.38.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3088: 1848.3s	2980	[ 522/ 866] blk.38.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3089: 1848.6s	2981	[ 523/ 866] blk.39.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3092: 1850.3s	2984	[ 526/ 866] blk.39.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3093: 1853.8s	2985	[ 527/ 866] blk.39.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3095: 1854.1s	2987	[ 529/ 866] blk.39.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3096: 1859.0s	2988	[ 530/ 866] blk.39.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3097: 1863.9s	2989	[ 531/ 866] blk.39.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3098: 1868.7s	2990	[ 532/ 866] blk.39.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3100: 1870.4s	2992	[ 534/ 866] blk.40.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3102: 1871.5s	2994	[ 536/ 866] blk.40.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3103: 1873.4s	2995	[ 537/ 866] blk.40.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3104: 1878.3s	2996	[ 538/ 866] blk.40.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3105: 1883.2s	2997	[ 539/ 866] blk.40.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3108: 1883.2s	3000	[ 542/ 866] blk.40.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3109: 1883.2s	3001	[ 543/ 866] blk.40.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3113: 1885.0s	3005	[ 547/ 866] blk.40.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3114: 1886.7s	3006	[ 548/ 866] blk.41.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3116: 1889.6s	3008	[ 550/ 866] blk.41.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3117: 1894.7s	3009	[ 551/ 866] blk.41.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3118: 1899.6s	3010	[ 552/ 866] blk.41.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3119: 1904.6s	3011	[ 553/ 866] blk.41.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3122: 1904.6s	3014	[ 556/ 866] blk.41.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3123: 1904.6s	3015	[ 557/ 866] blk.41.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3127: 1906.3s	3019	[ 561/ 866] blk.41.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3128: 1908.0s	3020	[ 562/ 866] blk.42.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3130: 1910.8s	3022	[ 564/ 866] blk.42.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3131: 1915.8s	3023	[ 565/ 866] blk.42.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3132: 1920.7s	3024	[ 566/ 866] blk.42.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3133: 1925.7s	3025	[ 567/ 866] blk.42.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3136: 1925.7s	3028	[ 570/ 866] blk.42.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3137: 1925.7s	3029	[ 571/ 866] blk.42.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3141: 1927.4s	3033	[ 575/ 866] blk.42.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3142: 1927.7s	3034	[ 576/ 866] blk.43.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3145: 1929.4s	3037	[ 579/ 866] blk.43.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3146: 1932.8s	3038	[ 580/ 866] blk.43.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3148: 1932.8s	3040	[ 582/ 866] blk.43.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L3149: 1934.9s	3041	[ 583/ 866] blk.43.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3150: 1939.7s	3042	[ 584/ 866] blk.43.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3151: 1944.6s	3043	[ 585/ 866] blk.43.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3153: 1946.3s	3045	[ 587/ 866] blk.44.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3155: 1949.3s	3047	[ 589/ 866] blk.44.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3156: 1954.3s	3048	[ 590/ 866] blk.44.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3157: 1959.3s	3049	[ 591/ 866] blk.44.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3158: 1964.2s	3050	[ 592/ 866] blk.44.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3161: 1964.2s	3053	[ 595/ 866] blk.44.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3162: 1964.2s	3054	[ 596/ 866] blk.44.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3166: 1966.1s	3058	[ 600/ 866] blk.44.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3167: 1967.7s	3059	[ 601/ 866] blk.45.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3169: 1970.5s	3061	[ 603/ 866] blk.45.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3170: 1975.5s	3062	[ 604/ 866] blk.45.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3171: 1980.4s	3063	[ 605/ 866] blk.45.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3172: 1985.5s	3064	[ 606/ 866] blk.45.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3175: 1985.5s	3067	[ 609/ 866] blk.45.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3176: 1985.5s	3068	[ 610/ 866] blk.45.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3180: 1987.3s	3072	[ 614/ 866] blk.45.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3181: 1989.0s	3073	[ 615/ 866] blk.46.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3183: 1990.1s	3075	[ 617/ 866] blk.46.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3184: 1992.0s	3076	[ 618/ 866] blk.46.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3185: 1996.9s	3077	[ 619/ 866] blk.46.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3186: 2001.7s	3078	[ 620/ 866] blk.46.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3189: 2001.7s	3081	[ 623/ 866] blk.46.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3190: 2001.7s	3082	[ 624/ 866] blk.46.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3194: 2003.5s	3086	[ 628/ 866] blk.46.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3195: 2003.8s	3087	[ 629/ 866] blk.47.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3198: 2005.5s	3090	[ 632/ 866] blk.47.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3199: 2008.9s	3091	[ 633/ 866] blk.47.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3201: 2009.2s	3093	[ 635/ 866] blk.47.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3202: 2014.1s	3094	[ 636/ 866] blk.47.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3203: 2019.0s	3095	[ 637/ 866] blk.47.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3204: 2024.1s	3096	[ 638/ 866] blk.47.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3206: 2025.8s	3098	[ 640/ 866] blk.48.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3208: 2028.7s	3100	[ 642/ 866] blk.48.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3209: 2033.6s	3101	[ 643/ 866] blk.48.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3210: 2038.5s	3102	[ 644/ 866] blk.48.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3211: 2043.4s	3103	[ 645/ 866] blk.48.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3214: 2043.4s	3106	[ 648/ 866] blk.48.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3215: 2043.4s	3107	[ 649/ 866] blk.48.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3219: 2045.2s	3111	[ 653/ 866] blk.48.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3220: 2046.9s	3112	[ 654/ 866] blk.49.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3222: 2047.9s	3114	[ 656/ 866] blk.49.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3223: 2049.8s	3115	[ 657/ 866] blk.49.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3224: 2054.9s	3116	[ 658/ 866] blk.49.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3225: 2059.9s	3117	[ 659/ 866] blk.49.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3228: 2059.9s	3120	[ 662/ 866] blk.49.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3229: 2059.9s	3121	[ 663/ 866] blk.49.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3233: 2061.6s	3125	[ 667/ 866] blk.49.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3234: 2063.3s	3126	[ 668/ 866] blk.50.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3236: 2066.2s	3128	[ 670/ 866] blk.50.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3237: 2071.0s	3129	[ 671/ 866] blk.50.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3238: 2075.8s	3130	[ 672/ 866] blk.50.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3239: 2080.7s	3131	[ 673/ 866] blk.50.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3242: 2080.7s	3134	[ 676/ 866] blk.50.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3243: 2080.7s	3135	[ 677/ 866] blk.50.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3247: 2082.5s	3139	[ 681/ 866] blk.50.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3248: 2082.8s	3140	[ 682/ 866] blk.51.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3251: 2084.4s	3143	[ 685/ 866] blk.51.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3252: 2088.0s	3144	[ 686/ 866] blk.51.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3254: 2088.3s	3146	[ 688/ 866] blk.51.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3255: 2093.3s	3147	[ 689/ 866] blk.51.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3256: 2098.2s	3148	[ 690/ 866] blk.51.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3257: 2103.1s	3149	[ 691/ 866] blk.51.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3259: 2104.8s	3151	[ 693/ 866] blk.52.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3261: 2105.9s	3153	[ 695/ 866] blk.52.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3262: 2107.8s	3154	[ 696/ 866] blk.52.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3263: 2112.7s	3155	[ 697/ 866] blk.52.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3264: 2117.5s	3156	[ 698/ 866] blk.52.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3267: 2117.5s	3159	[ 701/ 866] blk.52.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3268: 2117.5s	3160	[ 702/ 866] blk.52.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3272: 2119.3s	3164	[ 706/ 866] blk.52.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3273: 2121.0s	3165	[ 707/ 866] blk.53.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3275: 2124.0s	3167	[ 709/ 866] blk.53.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3276: 2129.0s	3168	[ 710/ 866] blk.53.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3277: 2133.9s	3169	[ 711/ 866] blk.53.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3278: 2138.8s	3170	[ 712/ 866] blk.53.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3281: 2138.8s	3173	[ 715/ 866] blk.53.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3282: 2138.8s	3174	[ 716/ 866] blk.53.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3286: 2140.5s	3178	[ 720/ 866] blk.53.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3287: 2142.3s	3179	[ 721/ 866] blk.54.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3289: 2145.1s	3181	[ 723/ 866] blk.54.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3290: 2150.0s	3182	[ 724/ 866] blk.54.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3291: 2154.9s	3183	[ 725/ 866] blk.54.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3292: 2159.9s	3184	[ 726/ 866] blk.54.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3295: 2159.9s	3187	[ 729/ 866] blk.54.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3296: 2159.9s	3188	[ 730/ 866] blk.54.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3300: 2161.8s	3192	[ 734/ 866] blk.54.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3301: 2162.1s	3193	[ 735/ 866] blk.55.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3304: 2163.8s	3196	[ 738/ 866] blk.55.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3305: 2167.2s	3197	[ 739/ 866] blk.55.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3307: 2167.2s	3199	[ 741/ 866] blk.55.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L3308: 2169.2s	3200	[ 742/ 866] blk.55.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3309: 2174.1s	3201	[ 743/ 866] blk.55.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3310: 2179.0s	3202	[ 744/ 866] blk.55.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3312: 2180.7s	3204	[ 746/ 866] blk.56.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3314: 2181.8s	3206	[ 748/ 866] blk.56.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3315: 2183.7s	3207	[ 749/ 866] blk.56.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3316: 2188.6s	3208	[ 750/ 866] blk.56.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3317: 2193.4s	3209	[ 751/ 866] blk.56.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3320: 2193.4s	3212	[ 754/ 866] blk.56.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3321: 2193.4s	3213	[ 755/ 866] blk.56.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3325: 2195.3s	3217	[ 759/ 866] blk.56.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3326: 2197.0s	3218	[ 760/ 866] blk.57.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3328: 2198.2s	3220	[ 762/ 866] blk.57.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3329: 2200.0s	3221	[ 763/ 866] blk.57.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3330: 2204.9s	3222	[ 764/ 866] blk.57.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3331: 2209.9s	3223	[ 765/ 866] blk.57.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3334: 2209.9s	3226	[ 768/ 866] blk.57.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3335: 2209.9s	3227	[ 769/ 866] blk.57.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3339: 2211.7s	3231	[ 773/ 866] blk.57.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3340: 2213.3s	3232	[ 774/ 866] blk.58.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3342: 2214.4s	3234	[ 776/ 866] blk.58.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3343: 2216.3s	3235	[ 777/ 866] blk.58.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3344: 2221.3s	3236	[ 778/ 866] blk.58.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3345: 2226.1s	3237	[ 779/ 866] blk.58.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3348: 2226.1s	3240	[ 782/ 866] blk.58.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3349: 2226.1s	3241	[ 783/ 866] blk.58.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3353: 2227.8s	3245	[ 787/ 866] blk.58.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3354: 2228.2s	3246	[ 788/ 866] blk.59.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3357: 2229.9s	3249	[ 791/ 866] blk.59.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3358: 2233.4s	3250	[ 792/ 866] blk.59.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3360: 2233.4s	3252	[ 794/ 866] blk.59.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L3361: 2235.4s	3253	[ 795/ 866] blk.59.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3362: 2240.3s	3254	[ 796/ 866] blk.59.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3363: 2245.2s	3255	[ 797/ 866] blk.59.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3365: 2246.9s	3257	[ 799/ 866] blk.60.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3367: 2248.0s	3259	[ 801/ 866] blk.60.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3368: 2249.9s	3260	[ 802/ 866] blk.60.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3369: 2254.8s	3261	[ 803/ 866] blk.60.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3370: 2259.8s	3262	[ 804/ 866] blk.60.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3373: 2259.8s	3265	[ 807/ 866] blk.60.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3374: 2259.8s	3266	[ 808/ 866] blk.60.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3378: 2261.7s	3270	[ 812/ 866] blk.60.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3379: 2263.3s	3271	[ 813/ 866] blk.61.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3381: 2264.4s	3273	[ 815/ 866] blk.61.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3382: 2266.3s	3274	[ 816/ 866] blk.61.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3383: 2271.2s	3275	[ 817/ 866] blk.61.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3384: 2276.0s	3276	[ 818/ 866] blk.61.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3387: 2276.0s	3279	[ 821/ 866] blk.61.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3388: 2276.0s	3280	[ 822/ 866] blk.61.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3392: 2277.8s	3284	[ 826/ 866] blk.61.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3393: 2279.5s	3285	[ 827/ 866] blk.62.attn_gate.weight              - [  5120,   6144,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3395: 2280.5s	3287	[ 829/ 866] blk.62.attn_qkv.weight               - [  5120,  10240,      1,      1], type =   q8_0, converting to q6_K .. size =    53.12 MiB ->    41.02 MiB
+L3396: 2282.4s	3288	[ 830/ 866] blk.62.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3397: 2287.3s	3289	[ 831/ 866] blk.62.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3398: 2292.4s	3290	[ 832/ 866] blk.62.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3401: 2292.4s	3293	[ 835/ 866] blk.62.ssm_alpha.weight              - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3402: 2292.4s	3294	[ 836/ 866] blk.62.ssm_beta.weight               - [  5120,     48,      1,      1], type =   q8_0, converting to q4_K .. size =     0.25 MiB ->     0.13 MiB
+L3406: 2294.2s	3298	[ 840/ 866] blk.62.ssm_out.weight                - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3407: 2294.5s	3299	[ 841/ 866] blk.63.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3410: 2296.2s	3302	[ 844/ 866] blk.63.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3411: 2299.6s	3303	[ 845/ 866] blk.63.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3413: 2299.6s	3305	[ 847/ 866] blk.63.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L3414: 2301.6s	3306	[ 848/ 866] blk.63.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3415: 2306.4s	3307	[ 849/ 866] blk.63.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3416: 2311.3s	3308	[ 850/ 866] blk.63.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3418: 2311.6s	3310	[ 852/ 866] blk.64.attn_k.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q4_K .. size =     5.31 MiB ->     2.81 MiB
+L3421: 2313.3s	3313	[ 855/ 866] blk.64.attn_output.weight            - [  6144,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    31.88 MiB ->    16.88 MiB
+L3422: 2316.6s	3314	[ 856/ 866] blk.64.attn_q.weight                 - [  5120,  12288,      1,      1], type =   q8_0, converting to q4_K .. size =    63.75 MiB ->    33.75 MiB
+L3424: 2316.6s	3316	[ 858/ 866] blk.64.attn_v.weight                 - [  5120,   1024,      1,      1], type =   q8_0, converting to q6_K .. size =     5.31 MiB ->     4.10 MiB
+L3425: 2318.6s	3317	[ 859/ 866] blk.64.ffn_down.weight               - [ 17408,   5120,      1,      1], type =   q8_0, converting to q6_K .. size =    90.31 MiB ->    69.73 MiB
+L3426: 2323.4s	3318	[ 860/ 866] blk.64.ffn_gate.weight               - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3427: 2328.3s	3319	[ 861/ 866] blk.64.ffn_up.weight                 - [  5120,  17408,      1,      1], type =   q8_0, converting to q4_K .. size =    90.31 MiB ->    47.81 MiB
+L3428: 2331.3s	3320	[ 862/ 866] blk.64.nextn.eh_proj.weight          - [ 10240,   5120,      1,      1], type =   q8_0, converting to q4_K .. size =    53.12 MiB ->    28.12 MiB
+L3433: 2331.3s	3325	llama_model_quantize_impl: model size  = 27690.97 MiB (8.50 BPW)
+L3434: 2331.3s	3326	llama_model_quantize_impl: quant size  = 16021.46 MiB (4.92 BPW)
+L3436: 2332.5s	3328	llama_quantize: quantize time = 1336971.62 ms
+L3437: 2332.5s	3329	llama_quantize:    total time = 1336971.62 ms
+L3438: 2333.0s	3330	[quantize-Q4_K_M] OK in 1338s
+L3439: 2333.0s	3331	Quantized OK: /kaggle/working/titan-ultra-Q4_K_M.gguf (16.8 GB)
+L3441: 2334.4s	3333	Free disk now: 1101.7 GB
+L3443: 2334.4s	3335	Model to serve: /kaggle/working/titan-ultra-Q4_K_M.gguf
+L3447: 2334.6s	3339	STAGE: push_to_hub
+L3449: 2335.3s	3341	Pushing 16.8 GB → ZEROLABS1/titan-ultra-gguf/titan-ultra-Q4_K_M.gguf
+L3451: 2401.2s	3343	HF push failed: cannot import name 'XetProgressReporter' from 'huggingface_hub.utils._xet_progress_reporting' (/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_xet_progress_reporting.py)
+L3452: 2401.2s	3344	GGUF is still at: /kaggle/working/titan-ultra-Q4_K_M.gguf
+L3453: 2401.2s	3345	[STAGE FAILED] push_to_hub: cannot import name 'XetProgressReporter' from 'huggingface_hub.utils._xet_progress_reporting' (/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_xet_progress_reporting.py)
+L3456: 2401.6s	3348	STAGE: start_server
+L3458: 2401.6s	3350	Model to serve: /kaggle/working/titan-ultra-Q4_K_M.gguf  (16.8 GB)
+L3460: 2404.7s	3352	Trying server config: dual GPU, 4 slots, ctx=8k, flash-attn auto
+L3461: 2404.7s	3353	  CMD: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-server -m /kaggle/working/titan-ultra-Q4_K_M.gguf --port 8080 --host 0.0.0.0 -a titan-ultra -ngl 999 --parallel 4 -c 8192 -b 512 --tensor-split 0.5,0.5 --flash-attn auto > /kaggle/working/llama_server.log 2>&
+L3463: 2529.8s	3355	>>> Server is UP: dual GPU, 4 slots, ctx=8k, flash-attn auto <<<
+L3464: 2529.8s	3356	Running test inference (Hello)...
+L3465: 2578.1s	3357	Server health OK but inference timed out — trying next config
+L3467: 2586.1s	3359	Trying server config: dual GPU, 2 slots, ctx=8k, flash-attn off
+L3468: 2586.1s	3360	  CMD: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-server -m /kaggle/working/titan-ultra-Q4_K_M.gguf --port 8080 --host 0.0.0.0 -a titan-ultra -ngl 999 --parallel 2 -c 8192 -b 256 --tensor-split 0.5,0.5 --flash-attn off > /kaggle/working/llama_server.log 2>&1
+L3470: 2611.2s	3362	>>> Server is UP: dual GPU, 2 slots, ctx=8k, flash-attn off <<<
+L3471: 2611.2s	3363	Running test inference (Hello)...
+L3472: 2620.9s	3364	Server health OK but inference timed out — trying next config
+L3474: 2628.9s	3366	Trying server config: single GPU, 4 slots, ctx=8k, flash-attn auto
+L3475: 2628.9s	3367	  CMD: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-server -m /kaggle/working/titan-ultra-Q4_K_M.gguf --port 8080 --host 0.0.0.0 -a titan-ultra -ngl 999 --parallel 4 -c 8192 -b 256 --split-mode none --main-gpu 0 --flash-attn auto > /kaggle/working/llama_server
+L3476: 2929.0s	3368	Config 'single GPU, 4 slots, ctx=8k, flash-attn auto' did not respond to /health in 300s
+L3477: 2929.0s	3369	0.00.676.142 W srv  llama_server: -----------------
+L3478: 2929.0s	3370	0.00.676.172 W srv  llama_server: CORS is set to allow all origins ('*') and no API key is set
+L3479: 2929.0s	3371	0.00.676.173 W srv  llama_server: this can be a security risk (cross-origin attacks)
+L3480: 2929.0s	3372	0.00.676.174 W srv  llama_server: more info: https://github.com/ggml-org/llama.cpp/pull/25655
+L3481: 2929.0s	3373	0.00.676.175 W srv  llama_server: -----------------
+L3482: 2929.0s	3374	0.00.677.762 I srv    load_model: loading model '/kaggle/working/titan-ultra-Q4_K_M.gguf'
+L3483: 2929.0s	3375	0.01.579.527 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 999, abort
+L3499: 2929.0s	3391	0.03.374.781 E ggml_backend_cuda_buffer_type_alloc_buffer: allocating 15088.32 MiB on device 0: cudaMalloc failed: out of memory
+L3500: 2929.0s	3392	0.03.374.821 E alloc_tensor_range: failed to allocate CUDA0 buffer of size 15821250560
+L3502: 2929.0s	3394	0.03.997.102 E llama_model_load_from_file_impl: failed to load model
+L3503: 2929.0s	3395	0.03.997.113 E cmn  common_init_: failed to load model '/kaggle/working/titan-ultra-Q4_K_M.gguf'
+L3504: 2929.0s	3396	0.03.997.124 E srv    load_model: failed to load model, '/kaggle/working/titan-ultra-Q4_K_M.gguf'
+L3506: 2929.0s	3398	0.03.997.914 E srv  llama_server: exiting due to model loading error
+L3509: 2932.0s	3401	Trying server config: single GPU, 1 slot, ctx=4k, flash-attn off (last resort)
+L3510: 2932.0s	3402	  CMD: /kaggle/tmp/llama-cpp-cuda-prebuilt/cuda-12.8/llama-server -m /kaggle/working/titan-ultra-Q4_K_M.gguf --port 8080 --host 0.0.0.0 -a titan-ultra -ngl 999 --parallel 1 -c 4096 -b 128 --split-mode none --main-gpu 0 --flash-attn off > /kaggle/working/llama_server.
+L3511: 3231.9s	3403	Config 'single GPU, 1 slot, ctx=4k, flash-attn off (last resort)' did not respond to /health in 300s
+L3512: 3231.9s	3404	0.00.665.442 W srv  llama_server: -----------------
+L3513: 3231.9s	3405	0.00.665.451 W srv  llama_server: CORS is set to allow all origins ('*') and no API key is set
+L3514: 3231.9s	3406	0.00.665.452 W srv  llama_server: this can be a security risk (cross-origin attacks)
+L3515: 3231.9s	3407	0.00.665.452 W srv  llama_server: more info: https://github.com/ggml-org/llama.cpp/pull/25655
+L3516: 3231.9s	3408	0.00.665.453 W srv  llama_server: -----------------
+L3517: 3231.9s	3409	0.00.667.001 I srv    load_model: loading model '/kaggle/working/titan-ultra-Q4_K_M.gguf'
+L3518: 3231.9s	3410	0.01.558.739 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 999, abort
+L3534: 3231.9s	3426	0.03.326.929 E ggml_backend_cuda_buffer_type_alloc_buffer: allocating 15088.32 MiB on device 0: cudaMalloc failed: out of memory
+L3535: 3231.9s	3427	0.03.326.943 E alloc_tensor_range: failed to allocate CUDA0 buffer of size 15821250560
+L3537: 3231.9s	3429	0.03.937.868 E llama_model_load_from_file_impl: failed to load model
+L3538: 3231.9s	3430	0.03.937.877 E cmn  common_init_: failed to load model '/kaggle/working/titan-ultra-Q4_K_M.gguf'
+L3539: 3231.9s	3431	0.03.937.886 E srv    load_model: failed to load model, '/kaggle/working/titan-ultra-Q4_K_M.gguf'
+L3541: 3231.9s	3433	0.03.938.717 E srv  llama_server: exiting due to model loading error
+L3543: 3231.9s	3435	[STAGE FAILED] start_server: Server did not come up under any configuration. Check /kaggle/working/llama_server.log
+L3546: 3232.1s	3438	STAGE: start_tunnel
+L3548: 3232.1s	3440	[STAGE FAILED] start_tunnel: Server is not running — skipping tunnel
+L3551: 3232.3s	3443	PIPELINE SUMMARY
+L3553: 3232.3s	3445	  [OK     ] pull_from_hub                       (1.2s)
+L3554: 3232.3s	3446	  [OK     ] preflight_gpu                       (0.0s)
+L3555: 3232.3s	3447	  [OK     ] preflight_disk                      (0.0s)
+L3556: 3232.3s	3448	  [OK     ] hf_auth                             (0.1s)
+L3557: 3232.3s	3449	  [OK     ] download_model                      (227.2s)
+L3558: 3232.3s	3450	  [OK     ] fetch_llamacpp_source               (11.6s)
+L3559: 3232.3s	3451	  [OK     ] fetch_llamacpp_binaries             (4.9s)
+L3560: 3232.3s	3452	  [OK     ] install_converter_deps              (23.2s)
+L3561: 3232.3s	3453	  [OK     ] convert_to_gguf_q8_0                (717.4s)
+L3562: 3232.3s	3454	  [OK     ] quantize                            (1338.0s)
+L3563: 3232.3s	3455	  [FAILED ] push_to_hub                         (66.5s)  ImportError: cannot import name 'XetProgressReporter' from 'huggingface_hub.utils._xet_progress_reporting' (/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_xet_progress_reporting.py)
+L3564: 3232.3s	3456	  [FAILED ] start_server                        (830.4s)  RuntimeError: Server did not come up under any configuration. Check /kaggle/working/llama_server.log
+L3565: 3232.3s	3457	  [FAILED ] start_tunnel                        (0.0s)  RuntimeError: Server is not running — skipping tunnel
+L3567: 3232.3s	3459	Serving model  : /kaggle/working/titan-ultra-Q4_K_M.gguf
+L3571: 3232.5s	3463	Server is not running — no keep-alive.
+L3574: 3236.3s	3466	/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'

@@ -1,0 +1,58 @@
+[
+  {
+    "concurrency": 10,
+    "success_rate": 100.0,
+    "success_count": 10,
+    "failed_count": 0,
+    "avg_ttft": 22.140990138053894,
+    "min_ttft": 3.711644172668457,
+    "max_ttft": 38.78747320175171,
+    "avg_tpot": 0.3143536704959291,
+    "avg_gen_speed": 3.1811303441196817,
+    "total_tokens": 1000,
+    "test_duration": 54.30252003669739,
+    "global_throughput": 18.415351613962017
+  },
+  {
+    "concurrency": 20,
+    "success_rate": 100.0,
+    "success_count": 20,
+    "failed_count": 0,
+    "avg_ttft": 38.14026161432266,
+    "min_ttft": 4.71118688583374,
+    "max_ttft": 72.76954793930054,
+    "avg_tpot": 0.46347743236657335,
+    "avg_gen_speed": 2.157602355941854,
+    "total_tokens": 2000,
+    "test_duration": 86.47433710098267,
+    "global_throughput": 23.128248993275864
+  },
+  {
+    "concurrency": 30,
+    "success_rate": 100.0,
+    "success_count": 30,
+    "failed_count": 0,
+    "avg_ttft": 54.92464781602224,
+    "min_ttft": 4.8274147510528564,
+    "max_ttft": 113.7388219833374,
+    "avg_tpot": 0.5959490206907897,
+    "avg_gen_speed": 1.677995877635402,
+    "total_tokens": 3000,
+    "test_duration": 125.40607857704163,
+    "global_throughput": 23.922285379149212
+  },
+  {
+    "concurrency": 40,
+    "success_rate": 82.5,
+    "success_count": 33,
+    "failed_count": 7,
+    "avg_ttft": 61.42453226898656,
+    "min_ttft": 5.203420162200928,
+    "max_ttft": 125.74230647087097,
+    "avg_tpot": 0.6472518414140369,
+    "avg_gen_speed": 1.5449936732745664,
+    "total_tokens": 3300,
+    "test_duration": 140.6414351463318,
+    "global_throughput": 23.463924387336363
+  }
+]

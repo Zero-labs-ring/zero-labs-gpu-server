@@ -1,0 +1,6 @@
+return '/api/v1/kernels/cancel-session/{kernel_session_id}'
+return '/api/v1/kernels/create-session/{slug}'
+return '/api/v1/kernels/delete/{user_name}/{kernel_slug}'
+return '/api/v1/kernels/output/download/{owner_slug}/{kernel_slug}'
+return '/api/v1/kernels/output/download_zip/{kernel_session_id}'
+return '/api/v1/kernels/sessions/{kernel_session_id}/logs/stream'

@@ -1,0 +1,19 @@
+{
+  "id": "zmyshok/sd-gpu-t4",
+  "id_no": 34484445,
+  "title": "SD-GPU-T4",
+  "code_file": "sd-gpu-t4.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "keywords": [],
+  "dataset_sources": [],
+  "kernel_sources": [],
+  "competition_sources": [],
+  "model_sources": [],
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:c75700eb2ebadc2512e3da6d394c0bb3e0fc8c8cd3598e6b3f94c6873e7a5dca",
+  "machine_shape": "NvidiaTeslaT4"
+}
