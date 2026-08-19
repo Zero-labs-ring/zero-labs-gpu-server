@@ -43,7 +43,7 @@ curl https://zero-gpu-server.vercel.app/api/v1/models \
       "name": "Titan Pro 9B",
       "object": "model",
       "description": "High-throughput dual-T4 Titan Pro 9B model with MTP acceleration (64 max batch).",
-      "context_window": 8192,
+      "context_window": 118000,
       "tier": "standard"
     },
     {
@@ -51,7 +51,7 @@ curl https://zero-gpu-server.vercel.app/api/v1/models \
       "name": "Titan Pro 9B (Short Alias)",
       "object": "model",
       "description": "Alias for Titan Pro 9B.",
-      "context_window": 8192,
+      "context_window": 118000,
       "tier": "standard"
     },
     {
@@ -59,7 +59,7 @@ curl https://zero-gpu-server.vercel.app/api/v1/models \
       "name": "Titan Ultra 27B",
       "object": "model",
       "description": "Ultra-reasoning Titan Ultra 27B Q4_K_M model with dual-T4 GPU offloading.",
-      "context_window": 4096,
+      "context_window": 118000,
       "tier": "premium"
     },
     {
@@ -67,7 +67,7 @@ curl https://zero-gpu-server.vercel.app/api/v1/models \
       "name": "Titan Ultra 27B (Short Alias)",
       "object": "model",
       "description": "Alias for Titan Ultra 27B.",
-      "context_window": 4096,
+      "context_window": 118000,
       "tier": "premium"
     },
     {
@@ -75,7 +75,7 @@ curl https://zero-gpu-server.vercel.app/api/v1/models \
       "name": "Titan Pro + Live Web Search",
       "object": "model",
       "description": "Titan Pro augmented with live real-time internet search context and citations.",
-      "context_window": 8192,
+      "context_window": 118000,
       "tier": "standard"
     },
     {
@@ -83,7 +83,7 @@ curl https://zero-gpu-server.vercel.app/api/v1/models \
       "name": "Titan Ultra + Live Web Search",
       "object": "model",
       "description": "Titan Ultra deep reasoning with real-time web search retrieval.",
-      "context_window": 4096,
+      "context_window": 118000,
       "tier": "premium"
     }
   ]

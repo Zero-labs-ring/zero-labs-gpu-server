@@ -11,7 +11,7 @@ export async function GET() {
       created: 1715000000,
       owned_by: 'zerolabs',
       description: 'High-throughput dual-T4 Titan Pro 9B model with MTP acceleration (64 max batch).',
-      context_window: 8192,
+      context_window: 118000,
       tier: 'standard',
     },
     {
@@ -21,7 +21,7 @@ export async function GET() {
       created: 1715000000,
       owned_by: 'zerolabs',
       description: 'Alias for Titan Pro 9B.',
-      context_window: 8192,
+      context_window: 118000,
       tier: 'standard',
     },
     {
@@ -31,7 +31,7 @@ export async function GET() {
       created: 1715000000,
       owned_by: 'zerolabs',
       description: 'Ultra-reasoning Titan Ultra 27B Q4_K_M model with dual-T4 GPU offloading.',
-      context_window: 4096,
+      context_window: 118000,
       tier: 'premium',
     },
     {
@@ -41,7 +41,7 @@ export async function GET() {
       created: 1715000000,
       owned_by: 'zerolabs',
       description: 'Alias for Titan Ultra 27B.',
-      context_window: 4096,
+      context_window: 118000,
       tier: 'premium',
     },
     {
@@ -51,7 +51,7 @@ export async function GET() {
       created: 1715000000,
       owned_by: 'zerolabs',
       description: 'Titan Pro augmented with live real-time internet search context and citations.',
-      context_window: 8192,
+      context_window: 118000,
       tier: 'standard',
     },
     {
@@ -61,7 +61,7 @@ export async function GET() {
       created: 1715000000,
       owned_by: 'zerolabs',
       description: 'Titan Ultra deep reasoning with real-time web search retrieval.',
-      context_window: 4096,
+      context_window: 118000,
       tier: 'premium',
     },
   ];

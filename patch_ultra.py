@@ -31,7 +31,7 @@ load_source = [
     "from llama_cpp import Llama\n",
     "\n",
     "USE_GPU = (num_gpus > 0)\n",
-    "N_CTX = 4096\n",
+    "N_CTX = 118000\n",
     "\n",
     "def load_model():\n",
     "    ts = [0.5, 0.5] if num_gpus > 1 else None\n",
