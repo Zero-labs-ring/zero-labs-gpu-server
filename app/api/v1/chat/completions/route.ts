@@ -65,15 +65,15 @@ async function getLiveEndpoint(
   defaultApiKey: string
 ): Promise<{ url: string; apiKey: string; gwId?: string } | null> {
   try {
-    const sixtyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    // 1. Check gateway_urls (fresh within 60 minutes)
+    // 1. Check gateway_urls (fresh within 10 minutes)
     const { data: gw } = await supabase
       .from('gateway_urls')
       .select('id, tunnel_url, openai_api_url, api_key, is_healthy, last_seen_at')
       .eq('model', model)
       .eq('is_healthy', true)
-      .gte('last_seen_at', sixtyMinutesAgo)
+      .gte('last_seen_at', tenMinutesAgo)
       .order('last_seen_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -87,12 +87,14 @@ async function getLiveEndpoint(
       };
     }
 
-    // 2. Fallback: check gateway_urls regardless of 5min window if healthy
+    // 2. Fallback: check gateway_urls updated within 15 minutes if healthy
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     const { data: gwAny } = await supabase
       .from('gateway_urls')
       .select('id, tunnel_url, api_key')
       .eq('model', model)
       .eq('is_healthy', true)
+      .gte('updated_at', fifteenMinutesAgo)
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -260,6 +262,10 @@ export async function POST(req: NextRequest) {
 
     if (!upstreamRes.ok) {
       const errText = await upstreamRes.text();
+      // Mark stale gateway as unhealthy if upstream returns 5xx or 530 tunnel error
+      if (liveTarget.gwId && [500, 502, 503, 504, 530].includes(upstreamRes.status)) {
+        await supabase.from('gateway_urls').update({ is_healthy: false }).eq('id', liveTarget.gwId);
+      }
       return NextResponse.json({
         error: `Upstream GPU error (${upstreamRes.status}): ${errText}`,
       }, { status: upstreamRes.status });
