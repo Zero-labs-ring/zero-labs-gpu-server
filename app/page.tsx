@@ -474,7 +474,7 @@ function OverviewView({
 function PlaygroundView({ originUrl }: { originUrl: string }) {
   const [model, setModel] = useState<'pro' | 'ultra' | 'search-pro' | 'search-ultra'>('pro');
   const [prompt, setPrompt] = useState('Explain how dual GPU load-balancing works in high-throughput distributed LLM inference.');
-  const [maxTokens, setMaxTokens] = useState(512);
+  const [maxTokens, setMaxTokens] = useState(131072);
   const [temp, setTemp] = useState(0.7);
   const [webSearch, setWebSearch] = useState(true);
   const [output, setOutput] = useState('');
@@ -526,12 +526,15 @@ function PlaygroundView({ originUrl }: { originUrl: string }) {
       const dec = new TextDecoder();
       let full = '';
       let tokCount = 0;
+      let sseBuffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = dec.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        sseBuffer += dec.decode(value, { stream: true });
+        const lines = sseBuffer.split('\n');
+        // Retain un-delimited trailing slice across TCP chunk boundaries
+        sseBuffer = lines.pop() || '';
 
         for (const line of lines) {
           const trimmed = line.trim();
@@ -575,6 +578,37 @@ function PlaygroundView({ originUrl }: { originUrl: string }) {
               <option value="search-pro">Search Pro (Titan Pro + Web Search)</option>
               <option value="search-ultra">Search Ultra (Titan Ultra + Web Search)</option>
             </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
+                Max Tokens (128K ceiling)
+              </label>
+              <input
+                type="number"
+                className="linear-input"
+                min={512}
+                max={131072}
+                step={512}
+                value={maxTokens}
+                onChange={e => setMaxTokens(Math.min(Math.max(Number(e.target.value) || 512, 512), 131072))}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
+                Temperature
+              </label>
+              <input
+                type="number"
+                className="linear-input"
+                min={0}
+                max={2}
+                step={0.1}
+                value={temp}
+                onChange={e => setTemp(parseFloat(e.target.value) || 0.7)}
+              />
+            </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>

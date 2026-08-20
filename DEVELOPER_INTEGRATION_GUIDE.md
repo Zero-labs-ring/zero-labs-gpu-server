@@ -187,7 +187,7 @@ stream = client.chat.completions.create(
         {"role": "user", "content": "Explain microservices vs monolith architecture in 3 bullet points."}
     ],
     temperature=0.7,
-    max_tokens=512,
+    max_tokens=8192, # Supports up to 131,072 (128K) tokens
     stream=True
 )
 
@@ -207,7 +207,7 @@ stream_ultra = client.chat.completions.create(
         {"role": "user", "content": "Solve: If a car travels at 60 mph for 2.5 hours, then 40 mph for 1.5 hours, what is its average speed?"}
     ],
     temperature=0.5,
-    max_tokens=1024,
+    max_tokens=16384, # Supports up to 131,072 (128K) tokens
     stream=True
 )
 
@@ -240,7 +240,7 @@ async function run() {
       { role: 'user', content: 'Write a TypeScript function to debounce an async API call.' }
     ],
     temperature: 0.7,
-    max_tokens: 512,
+    max_tokens: 8192, // Supports up to 131,072 (128K) tokens
     stream: true,
   });
 
@@ -265,7 +265,7 @@ curl -N -X POST https://zero-gpu-server.vercel.app/api/v1/chat/completions \
       {"role": "user", "content": "What is the speed of light in miles per hour?"}
     ],
     "temperature": 0.7,
-    "max_tokens": 256,
+    "max_tokens": 8192,
     "stream": true
   }'
 ```

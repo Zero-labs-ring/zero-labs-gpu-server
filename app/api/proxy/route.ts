@@ -118,6 +118,9 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        const requestedMaxTokens = payload.max_tokens ?? payload.max_new_tokens ?? 8192;
+        payload.max_tokens = Math.min(Math.max(Number(requestedMaxTokens) || 8192, 512), 131072);
+
         const base = tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
         const target = `${base}/v1/chat/completions`;
 
@@ -133,6 +136,8 @@ export async function POST(req: NextRequest) {
         const headers = new Headers();
         headers.set('Content-Type', upstream.headers.get('Content-Type') || 'text/event-stream');
         headers.set('Cache-Control', 'no-cache, no-transform');
+        headers.set('Connection', 'keep-alive');
+        headers.set('X-Accel-Buffering', 'no');
         if (searchResults.length > 0) {
             headers.set('X-Search-Sources-Count', String(searchResults.length));
         }

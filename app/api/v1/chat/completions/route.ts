@@ -150,9 +150,12 @@ export async function POST(req: NextRequest) {
       messages = [],
       stream = false,
       temperature = 0.7,
-      max_tokens = 512,
       ...extra
     } = body;
+
+    // Lift max_tokens ceiling to 128K (131,072) with robust fallback
+    const requestedMaxTokens = body.max_tokens ?? body.max_new_tokens ?? (extra as Record<string, unknown>)?.max_tokens ?? (extra as Record<string, unknown>)?.max_new_tokens ?? 8192;
+    const effectiveMaxTokens = Math.min(Math.max(Number(requestedMaxTokens) || 8192, 512), 131072);
 
     // Check if web search should be activated across all parameter conventions
     const enableSearch = Boolean(
@@ -241,7 +244,7 @@ export async function POST(req: NextRequest) {
           model: targetModel === 'pro' ? 'ornith-9b' : 'titan-ultra',
           messages: processedMessages,
           temperature,
-          max_tokens,
+          max_tokens: effectiveMaxTokens,
           stream,
           ...extra,
         }),
@@ -277,6 +280,7 @@ export async function POST(req: NextRequest) {
       headers.set('Content-Type', 'text/event-stream; charset=utf-8');
       headers.set('Cache-Control', 'no-cache, no-transform');
       headers.set('Connection', 'keep-alive');
+      headers.set('X-Accel-Buffering', 'no');
       if (searchResults.length > 0) {
         headers.set('X-Search-Sources-Count', String(searchResults.length));
       }
