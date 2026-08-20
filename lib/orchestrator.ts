@@ -1,391 +1,389 @@
 import { supabase } from './supabase';
-import { KaggleClient, parseNotebookOutput, extractTunnelUrls, getKaggleClientForAccount } from './kaggle';
-import { decrypt } from './crypto';
-import { getConfigValue, getConfig } from './config';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
 
-type ModelType = 'pro' | 'ultra';
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SESSION TIMING CONSTANTS (hardcoded — never user-configurable)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const TOTAL_SESSION_DURATION_MIN = 600;      // 10 hours
+const KAGGLE_TIMEOUT_SECONDS = 36000;        // --timeout=36000
+const WARMUP_DURATION_MIN = 10;
+const EFFECTIVE_SERVE_TIME_MIN = 590;
+const HANDOFF_TRIGGER_AT_MIN = 580;          // start new session 20 min before timeout
 
-function loadNotebook(model: ModelType): object {
-  const possibleFilenames = model === 'pro'
-    ? ['pro_notebook_ornith9b_FIXED_v2.ipynb', 'pro_notebook.ipynb']
-    : ['ultra_notebook.ipynb', 'Titan ultra.ipynb', 'titan_ultra_gguf_pipeline_v4.ipynb'];
+const KAGGLE_API_BASE = process.env.KAGGLE_API_BASE || 'https://www.kaggle.com/api/v1';
 
-  const possibleDirs = [
-    join(process.cwd(), 'notebooks', 'active'),
-    join(process.cwd(), 'push_dir'),
-    join(process.cwd(), 'notebooks'),
-  ];
-
-  for (const dir of possibleDirs) {
-    for (const file of possibleFilenames) {
-      const p = join(dir, file);
-      if (existsSync(p)) {
-        try {
-          return JSON.parse(readFileSync(p, 'utf-8'));
-        } catch { /* continue */ }
-      }
-    }
-  }
-
-  // Fallback empty kernel template if running in serverless cloud without local filesystem notebooks
-  return {
-    cells: [],
-    metadata: {
-      kernelspec: { display_name: 'Python 3', language: 'python', name: 'python3' },
-      language_info: { name: 'python', version: '3.10.0' }
-    },
-    nbformat: 4,
-    nbformat_minor: 5
-  };
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TYPES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+interface Account {
+  id: string;
+  label: string;
+  kaggle_username: string;
+  kaggle_key: string;
+  quota_used_minutes: number;
+  quota_limit_minutes: number;
+  is_active: boolean;
 }
 
-export async function runOrchestrationCycle(): Promise<{ log: string[] }> {
-  const log: string[] = [];
-  const cfg = await getConfig();
-
-  const targets: Record<ModelType, number> = {
-    pro: parseInt(cfg['PRO_TARGET_SESSIONS'] ?? '1', 10),
-    ultra: parseInt(cfg['ULTRA_TARGET_SESSIONS'] ?? '1', 10),
-  };
-
-  for (const model of ['pro', 'ultra'] as ModelType[]) {
-    const msgs = await manageModel(model, targets[model], cfg);
-    log.push(...msgs);
-  }
-
-  // Reset weekly hours for accounts whose reset_at has passed
-  await supabase
-    .from('kaggle_accounts')
-    .update({
-      weekly_hours_used: 0,
-      weekly_hours_reset_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
-    })
-    .lt('weekly_hours_reset_at', new Date().toISOString());
-
-  return { log };
+interface Slot {
+  id: string;
+  slot_index: number;
+  notebook_slug: string;
+  is_enabled: boolean;
 }
 
-export async function fireSingleSession(model: ModelType, accountId?: string): Promise<{ success: boolean; message: string; log: string[] }> {
-  const cfg = await getConfig();
-  const log: string[] = [];
-  await fireNewSession(model, cfg, log, accountId);
-  const isOk = !log.some(l => l.includes('❌'));
-  return {
-    success: isOk,
-    message: log.join(' | '),
-    log,
-  };
+interface Session {
+  id: string;
+  slot_id: string;
+  account_id: string;
+  kernel_ref: string | null;
+  started_at: string;
+  handoff_trigger_at: string;
+  timeout_at: string;
+  ended_at: string | null;
+  status: 'warming' | 'serving' | 'handoff_pending' | 'ended' | 'failed';
 }
 
-async function manageModel(
-  model: ModelType,
-  target: number,
-  cfg: Record<string, string>
-): Promise<string[]> {
-  const log: string[] = [];
-  const softLimitMs = parseFloat(cfg['SESSION_SOFT_LIMIT_H'] ?? '9') * 3600 * 1000;
-  const prefireMs = parseFloat(cfg['PREFIRE_BUFFER_MIN'] ?? '30') * 60 * 1000;
+interface TickResult {
+  slot_id: string;
+  slot_index: number;
+  action: string;
+  session_id?: string;
+  error?: string;
+}
 
-  const { data: active } = await supabase
-    .from('sessions')
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HELPER: Build Kaggle auth header (HTTP Basic)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function kaggleAuthHeader(username: string, key: string): string {
+  const encoded = Buffer.from(`${username}:${key}`).toString('base64');
+  return `Basic ${encoded}`;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 1. getAvailableAccount
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export async function getAvailableAccount(excludeIds: string[]): Promise<Account | null> {
+  let query = supabase
+    .from('accounts')
     .select('*')
-    .eq('model', model)
-    .in('status', ['queued', 'warming', 'ready', 'expiring']);
+    .eq('is_active', true)
+    .order('quota_used_minutes', { ascending: true }); // most remaining = lowest used first (when limit is same)
 
-  log.push(`[${model}] ${active?.length ?? 0}/${target} sessions active`);
+  const { data: allAccounts, error } = await query;
 
-  // Health check each active session
-  for (const session of active ?? []) {
-    await checkSessionHealth(session, log);
+  if (error || !allAccounts || allAccounts.length === 0) {
+    return null;
   }
 
-  // Re-count after health checks
-  const { data: fresh } = await supabase
-    .from('sessions')
-    .select('id, expires_at, status')
-    .eq('model', model)
-    .in('status', ['queued', 'warming', 'ready', 'expiring']);
+  // Filter: enough quota (>=600 min remaining) and not in exclude list
+  // Order by most remaining quota DESC = (limit - used) DESC
+  const eligible = allAccounts
+    .filter((a: Account) => {
+      const remaining = a.quota_limit_minutes - a.quota_used_minutes;
+      return remaining >= TOTAL_SESSION_DURATION_MIN && !excludeIds.includes(a.id);
+    })
+    .sort((a: Account, b: Account) => {
+      const remA = a.quota_limit_minutes - a.quota_used_minutes;
+      const remB = b.quota_limit_minutes - b.quota_used_minutes;
+      return remB - remA; // DESC — greedily pick most remaining
+    });
 
-  const freshCount = fresh?.length ?? 0;
-
-  // Check if any need pre-firing
-  const needsPrefire = (fresh ?? []).some((s: { expires_at: string | null }) => {
-    if (!s.expires_at) return false;
-    const left = new Date(s.expires_at).getTime() - Date.now();
-    return left < prefireMs;
-  });
-
-  const toFire = Math.max(0, target - freshCount);
-  if (toFire > 0) {
-    log.push(`[${model}] Firing ${toFire} new session(s)`);
-    for (let i = 0; i < toFire; i++) {
-      await fireNewSession(model, cfg, log);
-    }
-  }
-
-  if (needsPrefire) {
-    log.push(`[${model}] Pre-firing overlap session`);
-    await fireNewSession(model, cfg, log);
-  }
-
-  return log;
+  return eligible.length > 0 ? eligible[0] : null;
 }
 
-async function checkSessionHealth(
-  session: Record<string, unknown>,
-  log: string[]
-): Promise<void> {
-  const kaggle = await getKaggleClientForAccount(session.account_id as string);
-  if (!kaggle) {
-    await markDead(session.id as string, 'Account not found');
-    return;
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 2. startSession
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export async function startSession(slotId: string): Promise<Session | null> {
+  // Get slot
+  const { data: slot, error: slotErr } = await supabase
+    .from('slots')
+    .select('*')
+    .eq('id', slotId)
+    .single();
+
+  if (slotErr || !slot) {
+    console.error(`[orchestrator] Slot ${slotId} not found:`, slotErr?.message);
+    return null;
   }
 
-  try {
-    const { data: account } = await supabase
-      .from('kaggle_accounts')
-      .select('username')
-      .eq('id', session.account_id)
-      .single();
-
-    const username = account?.username ?? '';
-    const slug = session.kernel_slug as string;
-
-    const statusRes = await kaggle.getKernelStatus(username, slug);
-
-    if (statusRes.status === 'error' || statusRes.status === 'complete') {
-      await markDead(session.id as string, `Kernel ${statusRes.status}: ${statusRes.failureReason ?? ''}`);
-      log.push(`[session ${session.id}] Marked dead: ${statusRes.status}`);
-      return;
-    }
-
-    // If warming → try to grab output and extract URL
-    if (session.status === 'warming' && statusRes.status === 'running') {
-      const raw = await kaggle.getKernelOutput(username, slug);
-      const parsed = parseNotebookOutput(raw);
-
-      if (parsed && parsed.status === 'ready') {
-        await supabase
-          .from('sessions')
-          .update({
-            status: 'ready',
-            ready_at: new Date().toISOString(),
-            endpoints: parsed.endpoints,
-            total_concurrent: parsed.total_concurrent_capacity,
-            raw_output: parsed,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', session.id);
-        log.push(`[session ${session.id}] ✅ Now READY — endpoints extracted`);
-        return;
-      }
-
-      // Fallback: regex URL extraction
-      const urls = extractTunnelUrls(raw);
-      if (urls.length > 0) {
-        const endpoints = urls.map((url, i) => ({
-          port: 8000 + i,
-          tunnel_url: url,
-          openai_api_url: `${url}/v1`,
-          max_concurrent: 32,
-        }));
-        await supabase
-          .from('sessions')
-          .update({
-            status: 'ready',
-            ready_at: new Date().toISOString(),
-            endpoints,
-            total_concurrent: endpoints.length * 32,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', session.id);
-        log.push(`[session ${session.id}] ✅ READY via regex fallback: ${urls.join(', ')}`);
-      }
-    }
-
-    // Mark expiring if < prefire window
-    if (session.status === 'ready' && session.expires_at) {
-      const left = new Date(session.expires_at as string).getTime() - Date.now();
-      if (left < 30 * 60 * 1000) {
-        await supabase
-          .from('sessions')
-          .update({ status: 'expiring', updated_at: new Date().toISOString() })
-          .eq('id', session.id);
-        log.push(`[session ${session.id}] Marked EXPIRING`);
-      }
-    }
-
-    // Hard 11h limit
-    if (session.pushed_at) {
-      const age = Date.now() - new Date(session.pushed_at as string).getTime();
-      if (age > 11 * 3600 * 1000) {
-        await markDead(session.id as string, 'Exceeded 11h hard limit');
-        log.push(`[session ${session.id}] Killed: 11h limit`);
-      }
-    }
-  } catch (err) {
-    log.push(`[session ${session.id}] Health check error: ${err}`);
-  }
-}
-
-async function fireNewSession(
-  model: ModelType,
-  cfg: Record<string, string>,
-  log: string[],
-  targetAccountId?: string
-): Promise<void> {
-  const maxConcurrentPerAccount = parseInt(cfg['MAX_CONCURRENT_SESSIONS_PER_ACCOUNT'] ?? '2', 10);
-  const weeklyQuotaH = parseFloat(cfg['ACCOUNT_WEEKLY_QUOTA_H'] ?? '30');
-
-  // Count active sessions per account
+  // Get all account IDs currently running an active session
   const { data: activeSessions } = await supabase
     .from('sessions')
-    .select('account_id, kernel_slug')
-    .in('status', ['queued', 'warming', 'ready', 'expiring']);
+    .select('account_id')
+    .in('status', ['warming', 'serving', 'handoff_pending']);
 
-  const sessionCounts: Record<string, number> = {};
-  const existingSlugs: Record<string, string[]> = {};
-  for (const s of activeSessions ?? []) {
-    if (!s.account_id) continue;
-    sessionCounts[s.account_id] = (sessionCounts[s.account_id] || 0) + 1;
-    existingSlugs[s.account_id] = existingSlugs[s.account_id] || [];
-    if (s.kernel_slug) existingSlugs[s.account_id].push(s.kernel_slug);
-  }
+  const busyAccountIds = [...new Set((activeSessions ?? []).map((s: { account_id: string }) => s.account_id))];
 
-  let account: any = null;
-
-  if (targetAccountId) {
-    const { data: specAcc } = await supabase
-      .from('kaggle_accounts')
-      .select('*')
-      .eq('id', targetAccountId)
-      .single();
-    if (specAcc) account = specAcc;
-  }
+  // Find available account (exclude busy ones — one account = max one session)
+  const account = await getAvailableAccount(busyAccountIds);
 
   if (!account) {
-    // Fetch all active accounts matching model assignment
-    const { data: allAccounts } = await supabase
-      .from('kaggle_accounts')
-      .select('*')
-      .eq('is_active', true)
-      .in('model_assignment', [model, 'both'])
-      .lt('weekly_hours_used', weeklyQuotaH)
-      .order('weekly_hours_used', { ascending: true });
-
-    if (!allAccounts || allAccounts.length === 0) {
-      log.push(`[${model}] ❌ No active accounts with remaining weekly quota (< ${weeklyQuotaH}h)`);
-      return;
-    }
-
-    // Filter for accounts with < maxConcurrentPerAccount active sessions
-    const availableAccounts = allAccounts.filter(
-      (a: { id: string }) => (sessionCounts[a.id] || 0) < maxConcurrentPerAccount
-    );
-
-    account = availableAccounts.length > 0 ? availableAccounts[0] : allAccounts[0];
+    console.warn(`[orchestrator] ⚠️ Slot ${slot.slot_index}: No accounts available (quota_exhausted)`);
+    return null;
   }
-
-  const apiKey = decrypt(account.api_key_encrypted, account.api_key_iv, account.api_key_tag);
-  const kaggle = new KaggleClient({ username: account.username, apiKey });
-
-  const baseSlug = cfg[`${model.toUpperCase()}_KERNEL_SLUG`] ?? `zero-${model}-server`;
-  // If account already has a session with baseSlug, append index suffix
-  const accountSlugs = existingSlugs[account.id] || [];
-  let kernelSlug = baseSlug;
-  if (accountSlugs.includes(baseSlug)) {
-    kernelSlug = `${baseSlug}-2`;
-  }
-
-  const accelerator = 'NvidiaTeslaT4'; // HARDCODED 2xT4 shape
-  const softLimitMs = parseFloat(cfg['SESSION_SOFT_LIMIT_H'] ?? '10') * 3600 * 1000;
 
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + softLimitMs);
+  const handoffAt = new Date(now.getTime() + HANDOFF_TRIGGER_AT_MIN * 60 * 1000);
+  const timeoutAt = new Date(now.getTime() + TOTAL_SESSION_DURATION_MIN * 60 * 1000);
 
-  const { data: newSession, error: insertErr } = await supabase
+  // Push to Kaggle API
+  let kernelRef: string | null = null;
+  try {
+    const pushBody = {
+      id: (slot as Slot).notebook_slug,
+      language: 'python',
+      kernel_type: 'notebook',
+      enable_gpu: true,
+      enable_internet: true,
+      timeout: KAGGLE_TIMEOUT_SECONDS,
+    };
+
+    const response = await fetch(`${KAGGLE_API_BASE}/kernels/push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': kaggleAuthHeader(account.kaggle_username, account.kaggle_key),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(pushBody),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Kaggle push failed (${response.status}): ${errText}`);
+    }
+
+    const pushResult = await response.json();
+    kernelRef = pushResult.ref || pushResult.slug || null;
+  } catch (err) {
+    console.error(`[orchestrator] ❌ Kaggle push failed for slot ${slot.slot_index}, account ${account.label}:`, err);
+
+    // Insert failed session record
+    await supabase.from('sessions').insert({
+      slot_id: slotId,
+      account_id: account.id,
+      kernel_ref: null,
+      started_at: now.toISOString(),
+      handoff_trigger_at: handoffAt.toISOString(),
+      timeout_at: timeoutAt.toISOString(),
+      status: 'failed',
+    });
+
+    // Do NOT deduct quota on failure — refund guarantee
+    return null;
+  }
+
+  // Insert session row
+  const { data: session, error: insertErr } = await supabase
     .from('sessions')
     .insert({
+      slot_id: slotId,
       account_id: account.id,
-      model,
-      status: 'queued',
-      kernel_slug: kernelSlug,
-      pushed_at: now.toISOString(),
-      expires_at: expiresAt.toISOString(),
+      kernel_ref: kernelRef,
+      started_at: now.toISOString(),
+      handoff_trigger_at: handoffAt.toISOString(),
+      timeout_at: timeoutAt.toISOString(),
+      status: 'warming',
     })
     .select()
     .single();
 
-  if (insertErr || !newSession) {
-    log.push(`[${model}] ❌ Failed to insert session: ${insertErr?.message}`);
-    return;
+  if (insertErr || !session) {
+    console.error(`[orchestrator] ❌ Failed to insert session:`, insertErr?.message);
+    return null;
   }
 
-  try {
-    const notebook = loadNotebook(model) as any;
-    
-    // Inject SESSION_ID into the notebook so it can identify itself to Supabase
-    notebook.cells.unshift({
-      cell_type: 'code',
-      execution_count: null,
-      metadata: {},
-      outputs: [],
-      source: [
-        `# Auto-injected by zero-gpu-server orchestrator\n`,
-        `SESSION_ID = "${newSession.id}"\n`
-      ]
-    });
+  // Deduct 600 min from account quota (full session cost regardless)
+  await supabase
+    .from('accounts')
+    .update({
+      quota_used_minutes: account.quota_used_minutes + TOTAL_SESSION_DURATION_MIN,
+    })
+    .eq('id', account.id);
 
-    await kaggle.pushKernel(kernelSlug, notebook, accelerator);
+  console.log(
+    `[orchestrator] 🚀 Session started: slot=${slot.slot_index} account=${account.label} ` +
+    `kernel=${kernelRef} handoff_at=${handoffAt.toISOString()}`
+  );
 
+  return session as Session;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 3. triggerHandoff
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export async function triggerHandoff(slotId: string): Promise<{ newSession: Session | null; oldSessionEnded: boolean }> {
+  // Get current active session for this slot
+  const { data: oldSessions } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('slot_id', slotId)
+    .in('status', ['warming', 'serving', 'handoff_pending'])
+    .order('started_at', { ascending: false })
+    .limit(1);
+
+  const oldSession = oldSessions?.[0] ?? null;
+
+  // Start NEW session first (zero-gap guarantee)
+  const newSession = await startSession(slotId);
+
+  if (newSession && oldSession) {
+    // Mark old session as ended
     await supabase
       .from('sessions')
       .update({
-        status: 'warming',
-        started_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        status: 'ended',
+        ended_at: new Date().toISOString(),
       })
-      .eq('id', newSession.id);
+      .eq('id', oldSession.id);
 
-    // Track account rotation for stealth
-    await supabase.rpc('mark_account_used', { p_account_id: account.id });
-
-    log.push(`[${model}] 🚀 Kernel pushed: @${account.username}/${kernelSlug} (slot ${(sessionCounts[account.id] || 0) + 1}/${maxConcurrentPerAccount}) → session ${newSession.id}`);
-  } catch (err) {
-    log.push(`[${model}] ❌ Push failed: ${err}`);
-    await markDead(newSession.id, String(err));
+    console.log(`[orchestrator] 🔄 Handoff complete: slot ${slotId} — old=${oldSession.id} → new=${newSession.id}`);
+    return { newSession, oldSessionEnded: true };
   }
+
+  if (!newSession && oldSession) {
+    // No account available — log alert but don't kill old session
+    console.warn(`[orchestrator] ⚠️ Handoff failed for slot ${slotId}: no accounts available (quota_exhausted)`);
+    return { newSession: null, oldSessionEnded: false };
+  }
+
+  return { newSession, oldSessionEnded: false };
 }
 
-async function markDead(sessionId: string, reason: string): Promise<void> {
-  const { data: session } = await supabase
-    .from('sessions')
-    .select('account_id, pushed_at')
-    .eq('id', sessionId)
-    .single();
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 4. runSchedulerTick
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export async function runSchedulerTick(): Promise<TickResult[]> {
+  const results: TickResult[] = [];
+  const now = new Date();
 
-  if (session?.pushed_at) {
-    const hoursUsed = (Date.now() - new Date(session.pushed_at).getTime()) / 3600000;
-    await supabase.from('account_session_log').insert({
-      account_id: session.account_id,
-      session_id: sessionId,
-      hours_used: hoursUsed,
-    });
-    await supabase.rpc('increment_weekly_hours', {
-      p_account_id: session.account_id,
-      p_hours: hoursUsed,
-    });
+  // Get all enabled slots
+  const { data: enabledSlots, error: slotsErr } = await supabase
+    .from('slots')
+    .select('*')
+    .eq('is_enabled', true)
+    .order('slot_index', { ascending: true });
+
+  if (slotsErr || !enabledSlots) {
+    console.error('[orchestrator] Failed to fetch slots:', slotsErr?.message);
+    return [{ slot_id: '', slot_index: -1, action: 'error', error: slotsErr?.message ?? 'Unknown error' }];
   }
 
-  await supabase
-    .from('sessions')
-    .update({
-      status: 'dead',
-      ended_at: new Date().toISOString(),
-      error_message: reason,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', sessionId);
+  for (const slot of enabledSlots as Slot[]) {
+    try {
+      // Get current active session for this slot
+      const { data: activeSessions } = await supabase
+        .from('sessions')
+        .select('*')
+        .eq('slot_id', slot.id)
+        .in('status', ['warming', 'serving', 'handoff_pending'])
+        .order('started_at', { ascending: false })
+        .limit(1);
+
+      const currentSession = activeSessions?.[0] as Session | undefined;
+
+      if (!currentSession) {
+        // No active session → start one
+        const session = await startSession(slot.id);
+        results.push({
+          slot_id: slot.id,
+          slot_index: slot.slot_index,
+          action: session ? 'started_new_session' : 'quota_exhausted',
+          session_id: session?.id,
+        });
+        continue;
+      }
+
+      const sessionStartedAt = new Date(currentSession.started_at);
+      const handoffTriggerAt = new Date(currentSession.handoff_trigger_at);
+      const minutesSinceStart = (now.getTime() - sessionStartedAt.getTime()) / (60 * 1000);
+
+      // Check: failed session → retry via handoff
+      if (currentSession.status === 'failed') {
+        const { newSession } = await triggerHandoff(slot.id);
+        results.push({
+          slot_id: slot.id,
+          slot_index: slot.slot_index,
+          action: newSession ? 'retried_failed_session' : 'retry_failed_quota_exhausted',
+          session_id: newSession?.id,
+        });
+        continue;
+      }
+
+      // Check: handoff time reached and not yet triggered
+      if (now >= handoffTriggerAt && currentSession.status !== 'handoff_pending') {
+        // Mark as handoff_pending
+        await supabase
+          .from('sessions')
+          .update({ status: 'handoff_pending' })
+          .eq('id', currentSession.id);
+
+        const { newSession } = await triggerHandoff(slot.id);
+        results.push({
+          slot_id: slot.id,
+          slot_index: slot.slot_index,
+          action: newSession ? 'handoff_triggered' : 'handoff_failed_quota_exhausted',
+          session_id: newSession?.id,
+        });
+        continue;
+      }
+
+      // Check: warming → serving transition (after 10 min)
+      if (currentSession.status === 'warming' && minutesSinceStart >= WARMUP_DURATION_MIN) {
+        await supabase
+          .from('sessions')
+          .update({ status: 'serving' })
+          .eq('id', currentSession.id);
+
+        results.push({
+          slot_id: slot.id,
+          slot_index: slot.slot_index,
+          action: 'promoted_to_serving',
+          session_id: currentSession.id,
+        });
+        continue;
+      }
+
+      // No action needed — session is healthy
+      results.push({
+        slot_id: slot.id,
+        slot_index: slot.slot_index,
+        action: 'no_action',
+        session_id: currentSession.id,
+      });
+    } catch (err) {
+      console.error(`[orchestrator] Error processing slot ${slot.slot_index}:`, err);
+      results.push({
+        slot_id: slot.id,
+        slot_index: slot.slot_index,
+        action: 'error',
+        error: String(err),
+      });
+    }
+  }
+
+  return results;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 5. resetAllQuotas
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export async function resetAllQuotas(): Promise<{ reset_count: number; timestamp: string }> {
+  const { data, error } = await supabase
+    .from('accounts')
+    .update({ quota_used_minutes: 0 })
+    .eq('is_active', true)
+    .select('id');
+
+  if (error) {
+    console.error('[orchestrator] ❌ Quota reset failed:', error.message);
+    throw new Error(`Quota reset failed: ${error.message}`);
+  }
+
+  const count = data?.length ?? 0;
+  const timestamp = new Date().toISOString();
+
+  console.log(`[orchestrator] 🔄 Weekly quota reset: ${count} accounts zeroed at ${timestamp}`);
+
+  return { reset_count: count, timestamp };
 }

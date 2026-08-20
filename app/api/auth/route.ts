@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getEnvOrThrow } from '@/lib/env-check';
 
+export const dynamic = 'force-dynamic';
+
 function getAdminAuthToken(): string {
   const user = getEnvOrThrow('ADMIN_USERNAME');
   const pass = getEnvOrThrow('ADMIN_PASSWORD');

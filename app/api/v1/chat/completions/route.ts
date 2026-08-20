@@ -5,6 +5,7 @@ import { getEnvOrThrow } from '@/lib/env-check';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 interface ChatMessage {
   role: string;
@@ -64,15 +65,15 @@ async function getLiveEndpoint(
   defaultApiKey: string
 ): Promise<{ url: string; apiKey: string; gwId?: string } | null> {
   try {
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const sixtyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-    // 1. Check gateway_urls (fresh within 2 minutes)
+    // 1. Check gateway_urls (fresh within 60 minutes)
     const { data: gw } = await supabase
       .from('gateway_urls')
       .select('id, tunnel_url, openai_api_url, api_key, is_healthy, last_seen_at')
       .eq('model', model)
       .eq('is_healthy', true)
-      .gte('last_seen_at', twoMinutesAgo)
+      .gte('last_seen_at', sixtyMinutesAgo)
       .order('last_seen_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -86,19 +87,38 @@ async function getLiveEndpoint(
       };
     }
 
-    // 2. Fallback: check active sessions table where status = 'ready'
-    const { data: sess } = await supabase
-      .from('sessions')
-      .select('endpoints, model, status')
+    // 2. Fallback: check gateway_urls regardless of 5min window if healthy
+    const { data: gwAny } = await supabase
+      .from('gateway_urls')
+      .select('id, tunnel_url, api_key')
       .eq('model', model)
-      .eq('status', 'ready')
-      .not('endpoints', 'is', null)
-      .order('ready_at', { ascending: false })
+      .eq('is_healthy', true)
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (sess?.endpoints && Array.isArray(sess.endpoints) && sess.endpoints.length > 0) {
-      const ep = sess.endpoints[0];
+    if (gwAny?.tunnel_url) {
+      const base = gwAny.tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
+      return {
+        url: `${base}/v1/chat/completions`,
+        apiKey: gwAny.api_key || defaultApiKey,
+        gwId: gwAny.id,
+      };
+    }
+
+    // 3. Fallback: check sessions_legacy or sessions table
+    const { data: sessLegacy } = await supabase
+      .from('sessions_legacy')
+      .select('endpoints')
+      .eq('model', model)
+      .in('status', ['ready', 'serving', 'warming'])
+      .not('endpoints', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (sessLegacy?.endpoints && Array.isArray(sessLegacy.endpoints) && sessLegacy.endpoints.length > 0) {
+      const ep = sessLegacy.endpoints[0];
       const tunnel = ep.tunnel_url || (ep.openai_api_url ? ep.openai_api_url.replace(/\/v1$/, '') : null);
       if (tunnel) {
         const base = tunnel.replace(/\/$/, '');

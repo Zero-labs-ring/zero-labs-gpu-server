@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { invalidateCache } from '@/lib/config';
 
+export const dynamic = 'force-dynamic';
+
 // PUT /api/config/[key] — update a single config value
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ key: string }> }) {
     const { key } = await params;

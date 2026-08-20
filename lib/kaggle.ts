@@ -55,6 +55,7 @@ export class KaggleClient {
       machineShape: 'NvidiaTeslaT4',
       machine_shape: 'NvidiaTeslaT4',
       enableInternet: true,
+      timeout: 36000,
       datasetDataSources: [],
       kernelDataSources: [],
       competitionDataSources: [],
