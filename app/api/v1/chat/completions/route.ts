@@ -89,7 +89,7 @@ async function getLiveEndpoint(
 
     // 2. Fallback: check gateway_urls updated within 15 minutes if healthy
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const { data: gwData } = await supabase
+    const { data: gwFallback } = await supabase
       .from('gateway_urls')
       .select('id, tunnel_url, api_key')
       .eq('model', model)
@@ -99,12 +99,11 @@ async function getLiveEndpoint(
       .limit(1)
       .maybeSingle();
 
-    const gw = gwData as any | null;
-    if (gw?.tunnel_url) {
-      const base = gw.tunnel_url.replace(/\/$/, '');
+    if (gwFallback?.tunnel_url) {
+      const base = gwFallback.tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
       return {
         url: `${base}/v1/chat/completions`,
-        apiKey: gw.api_key || defaultApiKey,
+        apiKey: gwFallback.api_key || defaultApiKey,
       };
     }
 

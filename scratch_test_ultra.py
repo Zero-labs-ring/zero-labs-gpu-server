@@ -7,13 +7,17 @@ GPU_SERVER_URL = "http://localhost:3000"
 def test_ultra():
     print("\n--- 1. Testing Live Endpoints for Ultra ---")
     req = urllib.request.Request(f"{GPU_SERVER_URL}/api/endpoints")
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        data = json.loads(resp.read().decode('utf-8'))
-        print("Endpoints Data:", json.dumps(data, indent=2))
-        ultra_urls = data.get('ultra', [])
-        is_healthy = data.get('healthy', {}).get('ultra', False)
-        print(f"Ultra URLs: {ultra_urls}")
-        print(f"Ultra Healthy: {is_healthy}")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            print("Endpoints Data:", json.dumps(data, indent=2))
+            ultra_urls = data.get('ultra', [])
+            is_healthy = data.get('healthy', {}).get('ultra', False)
+            print(f"Ultra URLs: {ultra_urls}")
+            print(f"Ultra Healthy: {is_healthy}")
+    except urllib.error.HTTPError as e:
+        print(f"Endpoints HTTP Error {e.code}: {e.read().decode('utf-8')}")
+        return
         
     print("\n--- 2. Testing Chat Completion with Titan Ultra ---")
     chat_payload = {
