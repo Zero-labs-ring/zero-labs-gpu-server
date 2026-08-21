@@ -118,8 +118,8 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const requestedMaxTokens = payload.max_tokens ?? payload.max_new_tokens ?? 8192;
-        payload.max_tokens = Math.min(Math.max(Number(requestedMaxTokens) || 8192, 512), 131072);
+        const requestedMaxTokens = payload.max_tokens ?? payload.max_new_tokens ?? 131072;
+        payload.max_tokens = Math.min(Math.max(Number(requestedMaxTokens) || 131072, 512), 131072);
 
         const base = tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
         const target = `${base}/v1/chat/completions`;

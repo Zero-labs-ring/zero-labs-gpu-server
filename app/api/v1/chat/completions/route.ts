@@ -154,8 +154,8 @@ export async function POST(req: NextRequest) {
     } = body;
 
     // Lift max_tokens ceiling to 128K (131,072) with robust fallback
-    const requestedMaxTokens = body.max_tokens ?? body.max_new_tokens ?? (extra as Record<string, unknown>)?.max_tokens ?? (extra as Record<string, unknown>)?.max_new_tokens ?? 8192;
-    const effectiveMaxTokens = Math.min(Math.max(Number(requestedMaxTokens) || 8192, 512), 131072);
+    const requestedMaxTokens = body.max_tokens ?? body.max_new_tokens ?? (extra as Record<string, unknown>)?.max_tokens ?? (extra as Record<string, unknown>)?.max_new_tokens ?? 131072;
+    const effectiveMaxTokens = Math.min(Math.max(Number(requestedMaxTokens) || 131072, 512), 131072);
 
     // Check if web search should be activated across all parameter conventions
     const enableSearch = Boolean(
