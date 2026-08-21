@@ -24,23 +24,34 @@ export async function GET() {
         .order('weekly_hours_used', { ascending: true }),
     ]);
 
-    // New table accounts (with computed remaining)
-    const newAccounts = (newResult.data ?? []).map((a: { quota_limit_minutes: number; quota_used_minutes: number }) => ({
-      ...a,
+    // New table accounts (with computed remaining & normalized legacy fields)
+    const newAccounts = (newResult.data ?? []).map((a: { id: string; label: string; kaggle_username: string; quota_limit_minutes: number; quota_used_minutes: number; is_active: boolean; created_at: string }) => ({
+      id: a.id,
+      username: a.kaggle_username,
+      label: a.label,
+      model_assignment: 'both',
+      weekly_hours_used: (a.quota_used_minutes || 0) / 60,
+      weekly_hours_reset_at: '',
+      rotation_count: Math.floor((a.quota_used_minutes || 0) / 600),
+      last_used_at: '',
+      is_active: a.is_active,
+      created_at: a.created_at,
       _source: 'v2',
-      quota_remaining_minutes: a.quota_limit_minutes - a.quota_used_minutes,
+      quota_remaining_minutes: (a.quota_limit_minutes || 1800) - (a.quota_used_minutes || 0),
     }));
 
     // Legacy accounts
-    const legacyAccounts = legacyResult.data ?? [];
+    const legacyAccounts = (legacyResult.data ?? []).map((a: any) => ({
+      ...a,
+      weekly_hours_used: Number(a.weekly_hours_used || 0),
+      rotation_count: Number(a.rotation_count || 0),
+    }));
 
-    // If we have legacy data, return it (dashboard expects this shape)
-    // If we also have new accounts, append them
+    // Return combined merged list with priority to legacy table if present
     if (legacyAccounts.length > 0) {
       return NextResponse.json([...legacyAccounts, ...newAccounts]);
     }
 
-    // Only new accounts exist
     return NextResponse.json(newAccounts);
   } catch (err: unknown) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
