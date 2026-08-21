@@ -89,7 +89,7 @@ async function getLiveEndpoint(
 
     // 2. Fallback: check gateway_urls updated within 15 minutes if healthy
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const { data: gwFallback } = await supabase
+    const { data: gwAny } = await supabase
       .from('gateway_urls')
       .select('id, tunnel_url, api_key')
       .eq('model', model)
@@ -99,21 +99,23 @@ async function getLiveEndpoint(
       .limit(1)
       .maybeSingle();
 
-    if (gwFallback?.tunnel_url) {
-      const base = gwFallback.tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
+    if (gwAny?.tunnel_url) {
+      const base = gwAny.tunnel_url.replace(/\/$/, '').replace(/\/v1$/, '');
       return {
         url: `${base}/v1/chat/completions`,
-        apiKey: gwFallback.api_key || defaultApiKey,
+        apiKey: gwAny.api_key || defaultApiKey,
+        gwId: gwAny.id,
       };
     }
 
-    // 3. Fallback: check sessions legacy or sessions table
+    // 3. Fallback: check sessions_legacy or sessions table
     const { data: sessLegacy } = await supabase
-      .from('sessions')
+      .from('sessions_legacy')
       .select('endpoints')
       .eq('model', model)
-      .eq('status', 'ready')
-      .order('started_at', { ascending: false })
+      .in('status', ['ready', 'serving', 'warming'])
+      .not('endpoints', 'is', null)
+      .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -124,7 +126,7 @@ async function getLiveEndpoint(
         const base = tunnel.replace(/\/$/, '');
         return {
           url: `${base}/v1/chat/completions`,
-          apiKey: ep.api_key || defaultApiKey,
+          apiKey: defaultApiKey,
         };
       }
     }
