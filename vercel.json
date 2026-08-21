@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "app/api/**/*": {
+      "maxDuration": 18000
+    }
+  },
   "crons": [
     {
       "path": "/api/orchestrator/tick",

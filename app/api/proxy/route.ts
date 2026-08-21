@@ -4,7 +4,7 @@ import { searchWeb } from '@/app/api/search/route';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 18000;
 
 function isAuthorized(req: NextRequest, expectedApiKey: string): boolean {
     const auth = req.headers.get('authorization') ?? '';

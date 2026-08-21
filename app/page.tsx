@@ -236,6 +236,125 @@ export default function Dashboard() {
   );
 }
 
+// ════════════════════════ KAGGLE QUOTA CARD (NATIVE KAGGLE UI) ════════════════════════
+function KaggleQuotaCard({ account }: { account: Account }) {
+  const usedHours = account.weekly_hours_used || 0;
+  const availHours = Math.max(0, 30 - usedHours);
+  const availH = Math.floor(availHours);
+  const availM = Math.floor((availHours - availH) * 60);
+  const gpuPct = Math.min(100, Math.max(0, (usedHours / 30) * 100));
+
+  return (
+    <div
+      style={{
+        background: '#18181b',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: 12,
+        padding: '18px 20px',
+        color: '#f4f4f5',
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+        minWidth: 280,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ color: '#ffffff', display: 'flex', alignItems: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+              <rect x="9" y="9" width="6" height="6" />
+              <line x1="9" y1="1" x2="9" y2="4" />
+              <line x1="15" y1="1" x2="15" y2="4" />
+              <line x1="9" y1="20" x2="9" y2="23" />
+              <line x1="15" y1="20" x2="15" y2="23" />
+              <line x1="20" y1="9" x2="23" y2="9" />
+              <line x1="20" y1="14" x2="23" y2="14" />
+              <line x1="1" y1="9" x2="4" y2="9" />
+              <line x1="1" y1="14" x2="4" y2="14" />
+            </svg>
+          </div>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, letterSpacing: '-0.01em', color: '#ffffff' }}>
+            Your Kaggle Quota
+          </h3>
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            color: '#a1a1aa',
+            fontFamily: 'Geist Mono, monospace',
+            background: 'rgba(255, 255, 255, 0.06)',
+            padding: '2px 8px',
+            borderRadius: 4,
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          @{account.username}
+        </span>
+      </div>
+
+      {/* GPU Section */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#e4e4e7', width: 45 }}>GPU</span>
+          <span style={{ fontSize: 13, color: '#a1a1aa' }}>
+            {availH}h {availM > 0 ? `${availM}m ` : ''}available of 30h
+          </span>
+        </div>
+        <div style={{ height: 4, background: '#3f3f46', borderRadius: 2, overflow: 'hidden' }}>
+          <div
+            style={{
+              height: '100%',
+              width: `${gpuPct}%`,
+              background: '#ef4444',
+              borderRadius: 2,
+              transition: 'width 0.3s ease',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* TPU Section */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#e4e4e7', width: 45 }}>TPU</span>
+          <span style={{ fontSize: 13, color: '#a1a1aa' }}>20h available of 20h</span>
+        </div>
+        <div style={{ height: 4, background: '#3f3f46', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: '0%', background: '#38bdf8', borderRadius: 2 }} />
+        </div>
+      </div>
+
+      {/* AI Section */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#e4e4e7', width: 45 }}>AI</span>
+          <span style={{ fontSize: 13, color: '#a1a1aa' }}>Daily: $10.00 available of $10.00</span>
+        </div>
+        <div style={{ height: 4, background: '#3f3f46', borderRadius: 2, overflow: 'hidden', marginBottom: 10 }}>
+          <div style={{ height: '100%', width: '0%', background: '#38bdf8', borderRadius: 2 }} />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: 'transparent', width: 45 }}>AI</span>
+          <span style={{ fontSize: 13, color: '#a1a1aa' }}>Monthly: $100.00 available of $100.00</span>
+        </div>
+        <div style={{ height: 4, background: '#3f3f46', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: '0%', background: '#38bdf8', borderRadius: 2 }} />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ marginTop: 12, fontSize: 11, color: '#71717a' }}>
+        AI quota applies to{' '}
+        <span style={{ color: '#e4e4e7', textDecoration: 'underline', cursor: 'pointer' }}>
+          Kaggle Benchmarks
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ════════════════════════ OVERVIEW VIEW ════════════════════════
 function OverviewView({
   health,
@@ -396,6 +515,23 @@ function OverviewView({
             </button>
             <button className="btn btn-secondary" onClick={() => onNavigate('sessions')}>Inspect</button>
           </div>
+        </div>
+      </div>
+
+      {/* Real-Time Kaggle Quota Cards Grid */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Live Kaggle Account Quotas ({accounts.length})
+          </div>
+          <button className="btn btn-secondary btn-sm" onClick={() => onNavigate('accounts')}>
+            Manage All Accounts →
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+          {accounts.map(a => (
+            <KaggleQuotaCard key={a.id} account={a} />
+          ))}
         </div>
       </div>
 
@@ -828,6 +964,18 @@ function AccountsView({ onRefresh }: { onRefresh: () => void }) {
             {saving ? 'Verifying...' : 'Save Account'}
           </button>
         </form>
+      </div>
+
+      {/* Real-Time Kaggle Quota Cards Grid */}
+      <div style={{ marginBottom: 20 }}>
+        <div className="panel-title" style={{ marginBottom: 12 }}>
+          Real-Time Account Quotas ({accounts.length})
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+          {accounts.map(a => (
+            <KaggleQuotaCard key={a.id} account={a} />
+          ))}
+        </div>
       </div>
 
       <div className="panel">

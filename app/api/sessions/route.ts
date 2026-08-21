@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { startSession } from '@/lib/orchestrator';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 18000;
 
 /**
  * GET /api/sessions
@@ -40,17 +40,12 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  // New slot-based path
+  // New slot-based path with zero-gap manual rotation
   if (body.slot_id) {
     try {
-      const session = await startSession(body.slot_id);
-      if (!session) {
-        return NextResponse.json(
-          { success: false, message: 'No accounts available with sufficient quota' },
-          { status: 200 }
-        );
-      }
-      return NextResponse.json({ success: true, session });
+      const { triggerManualHandoff } = await import('@/lib/orchestrator');
+      const { success, session, message } = await triggerManualHandoff(body.slot_id);
+      return NextResponse.json({ success, session, message }, { status: 200 });
     } catch (err) {
       return NextResponse.json({ error: String(err) }, { status: 500 });
     }

@@ -5,7 +5,7 @@ import { getEnvOrThrow } from '@/lib/env-check';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 18000;
 
 interface ChatMessage {
   role: string;
@@ -153,8 +153,11 @@ export async function POST(req: NextRequest) {
       ...extra
     } = body;
 
-    // Lift max_tokens ceiling to 128K (131,072) with robust fallback
-    const requestedMaxTokens = body.max_tokens ?? body.max_new_tokens ?? (extra as Record<string, unknown>)?.max_tokens ?? (extra as Record<string, unknown>)?.max_new_tokens ?? 131072;
+    // Lift max_tokens ceiling to 128K (131,072) with dynamic query-aware calculation
+    const lastUserPrompt = messages.length > 0 ? (messages[messages.length - 1]?.content || '') : '';
+    const isComplexQuery = /\b(code|function|script|class|python|html|react|app|build|implement|debug|algorithm|sql|file|program|explain in detail|full)\b/i.test(lastUserPrompt);
+    const rawTokens = body.max_tokens ?? body.max_new_tokens ?? body.maxTokens ?? (extra as Record<string, unknown>)?.max_tokens ?? (extra as Record<string, unknown>)?.max_new_tokens;
+    const requestedMaxTokens = rawTokens ? Number(rawTokens) : (isComplexQuery ? 131072 : 131072);
     const effectiveMaxTokens = Math.min(Math.max(Number(requestedMaxTokens) || 131072, 512), 131072);
 
     // Check if web search should be activated across all parameter conventions
@@ -256,10 +259,17 @@ export async function POST(req: NextRequest) {
       if (liveTarget.gwId) {
         await supabase.from('gateway_urls').update({ is_healthy: false }).eq('id', liveTarget.gwId);
       }
+      // 🚀 Auto-trigger orchestrator failover in background to spin up next account
+      try {
+        const { runSchedulerTick } = await import('@/lib/orchestrator');
+        runSchedulerTick().catch(e => console.error('[failover] Auto-spinup error:', e));
+      } catch {}
+
       return NextResponse.json({
-        error: `GPU node at ${liveTarget.url} is unreachable or offline. Please start a new session in the dashboard.`,
+        error: `GPU node at ${liveTarget.url} is unreachable or offline. Automatic failover triggered to next account. Please retry shortly.`,
         model: targetModel,
         status: 'unreachable',
+        auto_failover: true,
       }, { status: 503 });
     }
 
@@ -268,6 +278,11 @@ export async function POST(req: NextRequest) {
       // Mark stale gateway as unhealthy if upstream returns 5xx or 530 tunnel error
       if (liveTarget.gwId && [500, 502, 503, 504, 530].includes(upstreamRes.status)) {
         await supabase.from('gateway_urls').update({ is_healthy: false }).eq('id', liveTarget.gwId);
+        // 🚀 Auto-trigger orchestrator failover in background to spin up next account
+        try {
+          const { runSchedulerTick } = await import('@/lib/orchestrator');
+          runSchedulerTick().catch(e => console.error('[failover] Auto-spinup error:', e));
+        } catch {}
       }
       return NextResponse.json({
         error: `Upstream GPU error (${upstreamRes.status}): ${errText}`,
