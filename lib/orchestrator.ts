@@ -369,21 +369,28 @@ export async function runSchedulerTick(): Promise<TickResult[]> {
 // 5. resetAllQuotas
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export async function resetAllQuotas(): Promise<{ reset_count: number; timestamp: string }> {
-  const { data, error } = await supabase
+  const timestamp = new Date().toISOString();
+
+  // 1. Reset accounts table
+  const { data: accountsData } = await supabase
     .from('accounts')
     .update({ quota_used_minutes: 0 })
     .eq('is_active', true)
     .select('id');
 
-  if (error) {
-    console.error('[orchestrator] ❌ Quota reset failed:', error.message);
-    throw new Error(`Quota reset failed: ${error.message}`);
-  }
+  // 2. Reset legacy kaggle_accounts table
+  const { data: kaggleAccountsData } = await supabase
+    .from('kaggle_accounts')
+    .update({
+      weekly_hours_used: 0,
+      weekly_hours_reset_at: timestamp,
+    })
+    .eq('is_active', true)
+    .select('id');
 
-  const count = data?.length ?? 0;
-  const timestamp = new Date().toISOString();
+  const count = (accountsData?.length ?? 0) + (kaggleAccountsData?.length ?? 0);
 
-  console.log(`[orchestrator] 🔄 Weekly quota reset: ${count} accounts zeroed at ${timestamp}`);
+  console.log(`[orchestrator] 🔄 Weekly Saturday quota reset: ${count} accounts zeroed at ${timestamp}`);
 
   return { reset_count: count, timestamp };
 }
