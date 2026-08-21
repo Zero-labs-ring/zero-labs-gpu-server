@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runSchedulerTick } from '@/lib/orchestrator';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 18000;
+export const maxDuration = 1800;
 
 /**
  * GET /api/cron/orchestrate
