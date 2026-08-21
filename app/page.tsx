@@ -788,13 +788,20 @@ function AccountsView({ onRefresh }: { onRefresh: () => void }) {
     finally { setSaving(false); }
   };
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleDelete = async (a: Account) => {
     if (!confirm(`Delete account @${a.username}?`)) return;
+    setDeletingId(a.id);
     try {
       await apiFetch(`/api/accounts/${a.id}`, { method: 'DELETE' });
-      fetchAccounts();
+      await fetchAccounts();
       onRefresh();
-    } catch { /* ignore */ }
+    } catch (err: any) {
+      alert(`Failed to delete account: ${err.message || String(err)}`);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -851,7 +858,13 @@ function AccountsView({ onRefresh }: { onRefresh: () => void }) {
                   </td>
                   <td>{a.rotation_count}</td>
                   <td>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(a)}>Delete</button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(a)}
+                      disabled={deletingId === a.id}
+                    >
+                      {deletingId === a.id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -951,7 +964,6 @@ function StealthView() {
                 <th>Hours Remaining</th>
                 <th>Rotations</th>
                 <th>Last Used</th>
-                <th>Stealth Score</th>
               </tr>
             </thead>
             <tbody>
@@ -963,7 +975,6 @@ function StealthView() {
                   <td>{a.hours_remaining.toFixed(1)}h</td>
                   <td>{a.rotation_count}</td>
                   <td style={{ color: 'var(--text-muted)' }}>{ago(a.last_used_at)}</td>
-                  <td><span className="badge badge-offline">{a.stealth_score.toFixed(1)}</span></td>
                 </tr>
               ))}
             </tbody>

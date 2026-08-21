@@ -60,8 +60,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/accounts/:id
- * Soft-disables the account (sets is_active=false).
- * Running sessions on this account finish naturally.
+ * Permanently removes or deletes the account from either accounts or kaggle_accounts table.
  */
 export async function DELETE(
   req: NextRequest,
@@ -73,23 +72,40 @@ export async function DELETE(
   try {
     const { id } = await params;
 
+    // Try deleting from kaggle_accounts first
+    const { data: legacyData, error: legacyErr } = await supabase
+      .from('kaggle_accounts')
+      .delete()
+      .eq('id', id)
+      .select('id, username, label')
+      .maybeSingle();
+
+    if (!legacyErr && legacyData) {
+      return NextResponse.json({
+        message: `Account @${legacyData.username} deleted successfully`,
+        account: legacyData,
+      });
+    }
+
+    // Next try deleting from accounts table
     const { data, error } = await supabase
       .from('accounts')
-      .update({ is_active: false })
+      .delete()
       .eq('id', id)
-      .select('id, label, kaggle_username, is_active')
-      .single();
+      .select('id, label, kaggle_username')
+      .maybeSingle();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    if (!data) {
+    if (!data && !legacyData) {
+      // Also attempt soft-delete / fallback if row is somehow referenced or check if error occurred
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
 
     return NextResponse.json({
-      message: `Account "${data.label}" disabled — running sessions will finish naturally`,
+      message: `Account "${data?.label || data?.kaggle_username}" deleted successfully`,
       account: data,
     });
   } catch (err: unknown) {
