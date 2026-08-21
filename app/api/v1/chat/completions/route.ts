@@ -5,7 +5,7 @@ import { getEnvOrThrow } from '@/lib/env-check';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 18000;
+export const maxDuration = 1800;
 
 interface ChatMessage {
   role: string;

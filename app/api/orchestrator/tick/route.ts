@@ -3,7 +3,7 @@ import { runSchedulerTick } from '@/lib/orchestrator';
 import { verifyOrchestratorAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 18000;
+export const maxDuration = 1800;
 
 /**
  * POST /api/orchestrator/tick
