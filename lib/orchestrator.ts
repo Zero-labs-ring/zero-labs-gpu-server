@@ -92,9 +92,20 @@ export async function getAvailableAccount(excludeIds: string[]): Promise<Account
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 2. startSession
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export async function startSession(slotId: string): Promise<Session | null> {
+// 2. startSession with Automatic Cascade
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+export async function startSession(
+  slotId: string,
+  retryCount: number = 0,
+  excludedAccountIds: string[] = []
+): Promise<Session | null> {
+  // Prevent infinite retry loop (max 5 cascade attempts)
+  if (retryCount >= 5) {
+    console.error(`[orchestrator] ❌ Max cascade retry limit (5) reached for slot ${slotId}`);
+    return null;
+  }
+
   // Get slot
   const { data: slot, error: slotErr } = await supabase
     .from('slots')
@@ -113,13 +124,18 @@ export async function startSession(slotId: string): Promise<Session | null> {
     .select('account_id')
     .in('status', ['warming', 'serving', 'handoff_pending']);
 
-  const busyAccountIds = [...new Set((activeSessions ?? []).map((s: { account_id: string }) => s.account_id))];
+  const busyAccountIds = [
+    ...new Set([
+      ...(activeSessions ?? []).map((s: { account_id: string }) => s.account_id),
+      ...excludedAccountIds,
+    ]),
+  ];
 
   // Find available account (exclude busy ones — one account = max one session)
   const account = await getAvailableAccount(busyAccountIds);
 
   if (!account) {
-    console.warn(`[orchestrator] ⚠️ Slot ${slot.slot_index}: No accounts available (quota_exhausted)`);
+    console.warn(`[orchestrator] ⚠️ Slot ${slot.slot_index}: No eligible accounts available in pool (quota_exhausted)`);
     return null;
   }
 
@@ -155,8 +171,18 @@ export async function startSession(slotId: string): Promise<Session | null> {
 
     const pushResult = await response.json();
     kernelRef = pushResult.ref || pushResult.slug || null;
-  } catch (err) {
-    console.error(`[orchestrator] ❌ Kaggle push failed for slot ${slot.slot_index}, account ${account.label}:`, err);
+  } catch (err: any) {
+    const errMessage = String(err?.message || err);
+    console.error(`[orchestrator] ❌ Kaggle push failed for slot ${slot.slot_index}, account ${account.label}:`, errMessage);
+
+    // If quota is exhausted or account error, update account in DB so we don't try it again today
+    if (errMessage.toLowerCase().includes('quota') || errMessage.includes('429') || errMessage.includes('400')) {
+      console.warn(`[orchestrator] ⚠️ Account ${account.label} hit Kaggle GPU quota limit. Marking quota exhausted.`);
+      await supabase
+        .from('accounts')
+        .update({ quota_used_minutes: account.quota_limit_minutes || 1800 })
+        .eq('id', account.id);
+    }
 
     // Insert failed session record
     await supabase.from('sessions').insert({
@@ -169,8 +195,9 @@ export async function startSession(slotId: string): Promise<Session | null> {
       status: 'failed',
     });
 
-    // Do NOT deduct quota on failure — refund guarantee
-    return null;
+    // 🚀 AUTOMATIC FAILOVER CASCADE: Immediately try the next best available Kaggle account!
+    console.log(`[orchestrator] 🔀 Auto-cascading to next Kaggle account for slot ${slot.slot_index} (attempt ${retryCount + 1}/5)...`);
+    return startSession(slotId, retryCount + 1, [...busyAccountIds, account.id]);
   }
 
   // Insert session row
@@ -202,7 +229,7 @@ export async function startSession(slotId: string): Promise<Session | null> {
     .eq('id', account.id);
 
   console.log(
-    `[orchestrator] 🚀 Session started: slot=${slot.slot_index} account=${account.label} ` +
+    `[orchestrator] 🚀 Session started successfully: slot=${slot.slot_index} account=${account.label} ` +
     `kernel=${kernelRef} handoff_at=${handoffAt.toISOString()}`
   );
 
@@ -210,9 +237,12 @@ export async function startSession(slotId: string): Promise<Session | null> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 3. triggerHandoff
+// 3. triggerHandoff & triggerManualHandoff
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export async function triggerHandoff(slotId: string): Promise<{ newSession: Session | null; oldSessionEnded: boolean }> {
+export async function triggerHandoff(
+  slotId: string,
+  targetAccountId?: string
+): Promise<{ newSession: Session | null; oldSessionEnded: boolean }> {
   // Get current active session for this slot
   const { data: oldSessions } = await supabase
     .from('sessions')
@@ -224,7 +254,7 @@ export async function triggerHandoff(slotId: string): Promise<{ newSession: Sess
 
   const oldSession = oldSessions?.[0] ?? null;
 
-  // Start NEW session first (zero-gap guarantee)
+  // Start NEW session first on the next best account (zero-gap guarantee)
   const newSession = await startSession(slotId);
 
   if (newSession && oldSession) {
@@ -250,12 +280,32 @@ export async function triggerHandoff(slotId: string): Promise<{ newSession: Sess
   return { newSession, oldSessionEnded: false };
 }
 
+// Helper for manual trigger (e.g. user clicks "Deploy" or restarts a slot)
+export async function triggerManualHandoff(slotId: string): Promise<{ success: boolean; session: Session | null; message: string }> {
+  const { newSession, oldSessionEnded } = await triggerHandoff(slotId);
+  if (newSession) {
+    return {
+      success: true,
+      session: newSession,
+      message: oldSessionEnded
+        ? `Successfully rotated to new Kaggle account (${newSession.account_id}) and ended previous session.`
+        : `Successfully launched new Kaggle session on account (${newSession.account_id}).`,
+    };
+  }
+  return {
+    success: false,
+    session: null,
+    message: 'No Kaggle accounts with sufficient quota available in the pool.',
+  };
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 4. runSchedulerTick
+// 4. runSchedulerTick with Dead Node Detection
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export async function runSchedulerTick(): Promise<TickResult[]> {
   const results: TickResult[] = [];
   const now = new Date();
+  const deadHeartbeatThreshold = new Date(now.getTime() - 4 * 60 * 1000).toISOString(); // 4 minutes stale
 
   // Get all enabled slots
   const { data: enabledSlots, error: slotsErr } = await supabase
@@ -298,21 +348,49 @@ export async function runSchedulerTick(): Promise<TickResult[]> {
       const handoffTriggerAt = new Date(currentSession.handoff_trigger_at);
       const minutesSinceStart = (now.getTime() - sessionStartedAt.getTime()) / (60 * 1000);
 
-      // Check: failed session → retry via handoff
+      // ── CHECK 1: Failed session → Auto-retry via cascade handoff
       if (currentSession.status === 'failed') {
+        console.warn(`[orchestrator] 🚨 Found failed session ${currentSession.id} on slot ${slot.slot_index}. Triggering failover...`);
         const { newSession } = await triggerHandoff(slot.id);
         results.push({
           slot_id: slot.id,
           slot_index: slot.slot_index,
-          action: newSession ? 'retried_failed_session' : 'retry_failed_quota_exhausted',
+          action: newSession ? 'retried_failed_session_auto_failover' : 'retry_failed_quota_exhausted',
           session_id: newSession?.id,
         });
         continue;
       }
 
-      // Check: handoff time reached and not yet triggered
+      // ── CHECK 2: Dead Node Detection (Serving session missing heartbeats > 4 mins)
+      if (currentSession.status === 'serving' && minutesSinceStart > 12) {
+        const { data: gwList } = await supabase
+          .from('gateway_urls')
+          .select('is_healthy, last_seen_at')
+          .gte('last_seen_at', deadHeartbeatThreshold)
+          .limit(1);
+
+        const hasRecentHeartbeat = gwList && gwList.length > 0;
+        if (!hasRecentHeartbeat) {
+          console.warn(`[orchestrator] 🚨 DEAD NODE DETECTED on slot ${slot.slot_index} (no heartbeat for >4m). Triggering auto-failover...`);
+          // Mark dead session as failed
+          await supabase
+            .from('sessions')
+            .update({ status: 'failed', ended_at: now.toISOString() })
+            .eq('id', currentSession.id);
+
+          const { newSession } = await triggerHandoff(slot.id);
+          results.push({
+            slot_id: slot.id,
+            slot_index: slot.slot_index,
+            action: newSession ? 'dead_node_auto_failover_success' : 'dead_node_failover_quota_exhausted',
+            session_id: newSession?.id,
+          });
+          continue;
+        }
+      }
+
+      // ── CHECK 3: Scheduled handoff time reached
       if (now >= handoffTriggerAt && currentSession.status !== 'handoff_pending') {
-        // Mark as handoff_pending
         await supabase
           .from('sessions')
           .update({ status: 'handoff_pending' })
@@ -328,7 +406,7 @@ export async function runSchedulerTick(): Promise<TickResult[]> {
         continue;
       }
 
-      // Check: warming → serving transition (after 10 min)
+      // ── CHECK 4: Warming → Serving promotion (after warmup window)
       if (currentSession.status === 'warming' && minutesSinceStart >= WARMUP_DURATION_MIN) {
         await supabase
           .from('sessions')
@@ -344,11 +422,11 @@ export async function runSchedulerTick(): Promise<TickResult[]> {
         continue;
       }
 
-      // No action needed — session is healthy
+      // Healthy session
       results.push({
         slot_id: slot.id,
         slot_index: slot.slot_index,
-        action: 'no_action',
+        action: 'healthy_serving',
         session_id: currentSession.id,
       });
     } catch (err) {
